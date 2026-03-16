@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postal Data Wiki — SME Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #1a1a1a; font-size: 13px; }
+
+/* ══════════════════════════════════════
+   SHARED HEADER
+══════════════════════════════════════ */
+.app-header {
+  background: linear-gradient(135deg, #003f7a 0%, #005ea2 100%);
+  color: white;
+  display: flex; align-items: stretch;
+  height: 64px; position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.hdr-brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 20px;
+  border-right: 1px solid rgba(255,255,255,0.15);
+  min-width: 200px; flex-shrink: 0;
+}
+
+.hdr-logo {
+  width: 80px; height: 80px; background: transparent;
+  border-radius: 4px; padding: 6px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.hdr-logo svg { width: 100%; height: 100%; }
+.hdr-title { font-size: 14px; font-weight: 700; line-height: 1.25; color: white; }
+.hdr-sub   { font-size: 10.5px; opacity: 0.65; margin-top: 2px; color: white; }
+
+.hdr-nav { display: flex; align-items: stretch; flex: 1; padding-left: 8px; }
+
+.nav-tab {
+  display: flex; align-items: center; padding: 0 24px;
+  color: rgba(255,255,255,0.72); font-size: 13.5px; font-weight: 500;
+  cursor: pointer; border-bottom: 3px solid transparent;
+  text-decoration: none; transition: all 0.18s; -webkit-user-select: none; user-select: none;
+}
+.nav-tab:hover { color: white; background: rgba(255,255,255,0.08); }
+.nav-tab.active {
+  color: white; border-bottom-color: #fdb913;
+  background: rgba(255,255,255,0.10); font-weight: 600;
+}
+
+.hdr-right {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 16px; border-left: 1px solid rgba(255,255,255,0.15);
+}
+.help-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: #0066cc; color: white; border: none; border-radius: 4px;
+  padding: 7px 14px; font-size: 12px; font-weight: 600;
+  font-family: inherit; cursor: pointer;
+}
+.help-btn:hover { background: #0052a3; }
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  color: rgba(255,255,255,0.85); font-size: 12px;
+  padding: 4px 8px; border-radius: 4px; cursor: pointer;
+}
+.user-chip:hover { background: rgba(255,255,255,0.1); }
+.avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #0066cc; border: 2px solid rgba(255,255,255,0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: white; flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════
+   PAGE SWITCHER
+══════════════════════════════════════ */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ══════════════════════════════════════
+   PAGE 1 — WELCOME
+══════════════════════════════════════ */
+#page-welcome { padding: 40px 32px; max-width: 900px; margin: 0 auto; }
+
+.welcome-heading { margin-bottom: 32px; }
+.welcome-heading h1 { font-size: 26px; font-weight: 700; line-height: 1.3; }
+.welcome-heading h1 a { color: #0066cc; text-decoration: none; }
+.welcome-heading p { color: #5a6a7e; font-size: 14px; margin-top: 8px; }
+
+.steps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.step-card {
+  background: white; border: 1px solid #dde3ea; border-radius: 8px;
+  padding: 20px 22px; display: flex; gap: 16px; align-items: flex-start;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.step-card:hover { box-shadow: 0 4px 16px rgba(0,63,122,0.12); border-color: #b8d4f0; }
+
+.step-badge {
+  background: #003f7a; color: white; border-radius: 6px;
+  padding: 7px 13px; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.8px; text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
+}
+.step-body h3 { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+.step-body p  { font-size: 12.5px; color: #5a6a7e; line-height: 1.55; }
+
+/* ══════════════════════════════════════
+   PAGE 2 — EXPLORE DATA ASSETS
+══════════════════════════════════════ */
+#page-explore { display: none; }
+#page-explore.active { display: block; }
+
+.data-layout {
+  display: grid; grid-template-columns: 320px 1fr;
+  gap: 20px; padding: 20px;
+  max-width: 1600px; margin: 0 auto;
+}
+
+/* Sidebar shared styles */
+.sidebar-section { margin-bottom: 16px; }
+
+.filter-panel {
+  background: #f8f9fa; border: 2px solid #0066cc;
+  padding: 16px; border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,102,204,0.1);
+}
+.filter-panel h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+
+.filter-group { margin-bottom: 14px; }
+.filter-group:last-child { margin-bottom: 0; }
+.filter-label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #1a1a1a; }
+
+.filter-select, .search-input {
+  width: 100%; padding: 8px 10px;
+  border: 1px solid #d0d0d0; border-radius: 4px;
+  font-size: 12.5px; font-family: inherit; background: white;
+}
+.search-wrapper .search-input { padding-right: 32px; }
+.filter-select:focus, .search-input:focus {
+  outline: none; border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+}
+
+.search-wrapper { position: relative; }
+.clear-search-btn {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: #999; font-size: 18px; padding: 0 4px;
+  display: none; line-height: 1;
+}
+.clear-search-btn:hover { color: #333; }
+.clear-search-btn.show { display: block; }
+
+.results-summary { background: white; padding: 12px; border-radius: 4px; border: 1px solid #e0e0e0; }
+.results-summary-item {
+  display: flex; justify-content: space-between;
+  margin-bottom: 8px; padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0; font-size: 12px;
+}
+.results-summary-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+.rs-label { color: #757575; font-weight: 600; }
+.rs-value { font-weight: 700; color: #0066cc; font-size: 14px; }
+.attributes-info {
+  background: #e8f1f5; padding: 8px 12px; border-radius: 4px;
+  border-left: 3px solid #0066cc; font-size: 12px; margin-top: 8px;
+}
+
+.assets-list-box { background: white; border-radius: 4px; border: 1px solid #e0e0e0; overflow: hidden; }
+.assets-list-header { background: #f8f8f8; padding: 10px 12px; border-bottom: 1px solid #e0e0e0; font-size: 12px; font-weight: 700; }
+
+.pagination-section {
+  padding: 7px 12px; border-bottom: 1px solid #e0e0e0;
+  font-size: 11px; color: #757575; font-weight: 600;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.pagination-buttons { display: flex; gap: 3px; }
+.pagination-btn {
+  background: white; border: 1px solid #d0d0d0; padding: 3px 6px;
+  border-radius: 3px; cursor: pointer; font-size: 10px; transition: all 0.15s;
+}
+.pagination-btn:hover { background: #f0f0f0; border-color: #0066cc; }
+
+.assets-ul { list-style: none; }
+.assets-li { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+.assets-li:last-child { border-bottom: none; }
+.asset-btn {
+  background: none; border: none; color: #0066cc; cursor: pointer;
+  font-size: 12px; font-weight: 500; padding: 0;
+  font-family: inherit; text-align: left; width: 100%;
+}
+.asset-btn:hover { text-decoration: underline; }
+
+.asset-info-panel { display: none; border-top: 2px solid #e0e0e0; padding: 12px; background: white; }
+.asset-info-panel.show { display: block; }
+.asset-info-box {
+  padding: 10px 12px; background: #0066cc; color: white;
+  border-radius: 4px; margin-bottom: 12px; font-size: 11px; font-weight: 600; line-height: 1.5;
+}
+.asset-info-details { font-size: 12px; }
+.asset-info-row { margin-bottom: 8px; }
+.asset-info-label { font-weight: 700; color: #1a1a1a; margin-bottom: 2px; font-size: 11px; }
+.asset-info-value { color: #757575; font-size: 11px; }
+.asset-info-value.link { color: #0066cc; }
+.hide-btn {
+  width: 100%; margin-top: 10px; padding: 6px; background: #f0f0f0;
+  border: 1px solid #d0d0d0; border-radius: 3px; cursor: pointer;
+  font-size: 11px; font-weight: 600; font-family: inherit;
+}
+.hide-btn:hover { border-color: #0066cc; color: #0066cc; }
+
+/* Main data content */
+.data-main { display: flex; flex-direction: column; gap: 16px; }
+.asset-name-banner { background: white; padding: 14px 16px; border-radius: 4px; border-bottom: 2px solid #e0e0e0; }
+.asset-name-banner h2 { font-size: 17px; font-weight: 700; color: #1a1a1a; }
+
+.attributes-banner {
+  background: #e8f1f5; padding: 12px 16px; border-radius: 4px;
+  border-left: 3px solid #0066cc; display: flex; gap: 32px; align-items: center;
+}
+.banner-item { display: flex; flex-direction: column; }
+.banner-label { font-size: 11px; color: #757575; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.banner-value { font-size: 20px; font-weight: 700; color: #0066cc; margin-top: 2px; }
+.banner-value.warning { color: #fdb913; }
+
+.table-container { background: white; border-radius: 4px; overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.4; }
+thead { background: #003f7a; color: white; }
+thead th {
+  padding: 11px 12px; text-align: left; font-weight: 600;
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px;
+  white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.08);
+}
+thead th:last-child { border-right: none; }
+tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.1s; cursor: pointer; }
+tbody tr:hover { background: #f5faff; }
+tbody td { padding: 10px 12px; vertical-align: top; }
+.field-name {
+  background: none; border: none; color: #0066cc; cursor: pointer;
+  font-weight: 600; font-size: 11.5px; font-family: 'Courier New', monospace; padding: 0; text-align: left;
+}
+.field-name:hover { text-decoration: underline; }
+.ai-col     { background: #eef6ff; font-weight: 600; }
+.ai-col-desc{ background: #eef6ff; font-weight: 600; }
+.edit-btn {
+  background: white; border: 1px solid #d0d0d0; padding: 5px 10px;
+  border-radius: 3px; cursor: pointer; font-size: 11.5px;
+  font-family: inherit; transition: all 0.15s; font-weight: 500;
+}
+.edit-btn:hover { background: #0066cc; border-color: #0066cc; color: white; }
+
+/* ══════════════════════════════════════
+   PAGE 3 — CHANGE SUGGESTIONS
+══════════════════════════════════════ */
+#page-changes { display: none; }
+#page-changes.active { display: flex; flex-direction: column; height: calc(100vh - 64px); }
+
+/* Top action bar */
+.cs-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px; background: white;
+  border-bottom: 1px solid #e0e0e0; flex-shrink: 0;
+}
+.cs-topbar-title {
+  font-size: 14px; font-weight: 600; color: #0066cc;
+}
+.cs-actions { display: flex; gap: 8px; }
+.cs-action-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: white; border: 1px solid #c0c0c0;
+  padding: 6px 14px; border-radius: 4px;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer; color: #444; transition: all 0.15s;
+}
+.cs-action-btn:hover { border-color: #0066cc; color: #0066cc; }
+.cs-action-btn.submit { background: #0066cc; color: white; border-color: #0066cc; }
+.cs-action-btn.submit:hover { background: #0052a3; }
+
+/* Body layout */
+.cs-body { display: flex; flex: 1; overflow: hidden; }
+
+/* Left panel */
+.cs-sidebar {
+  width: 240px; flex-shrink: 0;
+  background: #ebebeb; border-right: 1px solid #d5d5d5;
+  display: flex; flex-direction: column; padding: 16px 14px;
+  gap: 12px; overflow-y: auto;
+}
+
+.cs-sidebar-label { font-size: 12px; font-weight: 700; color: #1a1a1a; }
+
+.cs-status-select {
+  width: 100%; padding: 8px 10px; border: 1px solid #ccc;
+  border-radius: 4px; font-size: 12.5px; font-family: inherit;
+  background: white; cursor: pointer;
+}
+.cs-status-select:focus { outline: none; border-color: #0066cc; }
+
+.cs-suggestions-label { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-top: 4px; }
+
+.cs-no-results {
+  background: #c8dff7; border-radius: 6px; padding: 20px 16px;
+  font-size: 13px; color: #003f7a; font-weight: 500; line-height: 1.4;
+}
+
+/* Suggestion items (shown when there are results) */
+.cs-suggestion-item {
+  background: white; border: 1px solid #d0d0d0; border-radius: 5px;
+  padding: 10px 12px; cursor: pointer; transition: all 0.15s;
+  font-size: 12px;
+}
+.cs-suggestion-item:hover { border-color: #0066cc; background: #f0f7ff; }
+.cs-suggestion-item.active { border-color: #0066cc; background: #e0efff; border-left: 3px solid #0066cc; }
+.cs-suggestion-name { font-weight: 600; color: #1a1a1a; margin-bottom: 3px; }
+.cs-suggestion-meta { color: #757575; font-size: 11px; }
+
+/* Sort toggle at bottom */
+.cs-sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+
+.cs-toggle-row {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 12px; color: #444; font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.sort-btn {
+  padding: 8px 14px; background: white; border: 1px solid #d0d0d0;
+  border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;
+  color: #333; display: flex; align-items: center; gap: 6px;
+  transition: all 0.15s; font-family: inherit;
+}
+.sort-btn:hover { background: #f5f5f5; border-color: #999; }
+.sort-btn.active { background: #0066cc; color: white; border-color: #0066cc; }
+.sort-btn svg { width: 14px; height: 14px; }
+
+.toggle-switch {
+  width: 36px; height: 20px; background: #ccc; border-radius: 10px;
+  position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-switch.on { background: #0066cc; }
+.toggle-knob {
+  width: 16px; height: 16px; background: white; border-radius: 50%;
+  position: absolute; top: 2px; left: 2px; transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle-switch.on .toggle-knob { left: 18px; }
+
+.cs-refresh-btn {
+  width: 100%; padding: 11px; background: #003f7a; color: white;
+  border: none; border-radius: 5px; font-size: 13px; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: background 0.15s;
+}
+.cs-refresh-btn:hover { background: #002d5a; }
+
+/* Right main area */
+.cs-main {
+  flex: 1; background: white; display: flex;
+  align-items: center; justify-content: center;
+  color: #aaa; font-size: 14px; font-style: italic;
+  overflow-y: auto; padding: 40px;
+}
+
+/* ══════════════════════════════════════
+   MODAL
+══════════════════════════════════════ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 500;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal-dialog {
+  background: white; border-radius: 8px; width: 100%;
+  max-width: 720px; max-height: 92vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  display: flex; flex-direction: column;
+}
+.modal-header {
+  background: #003f7a; color: white; padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-radius: 8px 8px 0 0; flex-shrink: 0;
+}
+.modal-header h2 { font-size: 16px; font-weight: 700; }
+.modal-close { background: none; border: none; color: white; font-size: 22px; cursor: pointer; opacity: 0.8; }
+.modal-close:hover { opacity: 1; }
+.modal-body { padding: 22px 24px; flex: 1; }
+.modal-section { margin-bottom: 24px; }
+.modal-section:last-child { margin-bottom: 0; }
+.modal-section-title { font-size: 13px; font-weight: 700; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; margin-bottom: 12px; }
+.comparison-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.comparison-col { padding: 12px; background: #f5f5f5; border-radius: 4px; border-left: 4px solid #d0d0d0; }
+.comparison-col.suggested { background: #e8f2fc; border-left-color: #0066cc; }
+.col-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #8a9ab0; margin-bottom: 5px; }
+.comparison-col.suggested .col-label { color: #005ea2; }
+.col-value { font-size: 13px; color: #1a1a1a; line-height: 1.5; }
+.edit-section { background: #eef6ff; padding: 12px; border-radius: 4px; }
+.edit-section label { display: block; font-size: 11.5px; font-weight: 700; color: #0066cc; margin-bottom: 7px; }
+textarea {
+  width: 100%; padding: 10px 12px; border: 1.5px solid #d0d0d0;
+  border-radius: 4px; font-family: inherit; font-size: 13px; min-height: 88px; resize: vertical;
+}
+textarea:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 3px rgba(0,102,204,0.1); }
+.char-count { font-size: 10.5px; color: #8a9ab0; text-align: right; margin-top: 4px; }
+.modal-footer {
+  background: #f8f8f8; border-top: 1px solid #e0e0e0; padding: 14px 24px;
+  display: flex; justify-content: flex-end; gap: 10px;
+  border-radius: 0 0 8px 8px; flex-shrink: 0;
+}
+.modal-btn {
+  padding: 8px 18px; font-size: 12.5px; font-weight: 600;
+  border-radius: 4px; cursor: pointer; border: 1.5px solid #d0d0d0;
+  background: white; font-family: inherit; transition: all 0.15s;
+}
+.modal-btn:hover { border-color: #0066cc; color: #0066cc; }
+.modal-btn.primary { background: #0066cc; color: white; border-color: #0066cc; }
+.modal-btn.primary:hover { background: #0052a3; }
+.modal-btn.success { background: #07a41e; color: white; border-color: #07a41e; }
+.modal-btn.success:hover { background: #058018; }
+.modal-btn.danger { background: #e31c3d; color: white; border-color: #e31c3d; }
+.modal-btn.danger:hover { background: #c71c26; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SHARED HEADER
+══════════════════════════════════════ -->
+<header class="app-header">
+  <div class="hdr-brand">
+    <div class="hdr-logo">
+      <img src="../../Survey Pop Up/Survey Pop Up/images/CDAO_logo_white.svg" alt="CDAO Logo">
+    </div>
+    <div>
+      <div class="hdr-title">Postal Data Wiki</div>
+      <div class="hdr-sub">SME Dashboard · Data Asset Management</div>
+    </div>
+  </div>
+
+  <nav class="hdr-nav">
+    <!-- Tab 1: Welcome -->
+    <a class="nav-tab active" id="tab-welcome" href="#" onclick="showPage('welcome');return false;">Welcome</a>
+    <!-- Tab 2: Explore Data Assets -->
+    <a class="nav-tab" id="tab-explore" href="#" onclick="showPage('explore');return false;">Explore Data Assets</a>
+    <!-- Tab 3: Change Suggestions -->
+    <a class="nav-tab" id="tab-changes" href="#" onclick="showPage('changes');return false;">Change Suggestions</a>
+  </nav>
+
+  <div class="hdr-right">
+    <button class="help-btn">? Help</button>
+    <div class="user-chip">
+      <div class="avatar">MS</div>
+      <span>Mar Solis</span>
+    </div>
+  </div>
+</header>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 1 — WELCOME
+══════════════════════════════════════ -->
+<div class="page active" id="page-welcome">
+  <div style="max-width:900px;margin:0 auto;padding:40px 32px;">
+    <div class="welcome-heading">
+      <h1>Welcome, <a href="#">Mar Solis</a> !</h1>
+      <p>Ready to begin your curation journey? Use the process below to help you get started.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-badge">Step 1</div>
+        <div class="step-body">
+          <h3>Select a Data Asset</h3>
+          <p>Use the left navigation panel to select a Data Asset. Filter by Curation Status, Data Domain, or Search.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-badge">Step 2</div>
+        <div class="step-body">
+          <h3>View Attribute Details</h3>
+          <p>After selecting a Data Asset, its attributes will appear on the right side of the screen.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-badge">Step 3</div>
+        <div class="step-body">
+          <h3>Edit Functional Names or Descriptions</h3>
+          <p>Use AI suggestions to create a functional name or description. When your edit differs from current values, the field turns brown.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-badge">Step 4</div>
+        <div class="step-body">
+          <h3>Submit Attribute Changes</h3>
+          <p>When ready, click Submit. To save progress and return later, click Save.</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:32px;text-align:center;">
+      <button onclick="showPage('explore')" style="background:#003f7a;color:white;border:none;padding:12px 32px;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">
+        → Go to Explore Data Assets
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 2 — EXPLORE DATA ASSETS
+══════════════════════════════════════ -->
+<div class="page" id="page-explore">
+<div class="data-layout">
+
+  <!-- Sidebar -->
+  <aside>
+    <div class="sidebar-section">
+      <div class="filter-panel">
+        <h2>⚙️ Filters</h2>
+        <div class="filter-group">
+          <label class="filter-label">Curation Status</label>
+          <select class="filter-select" id="curationFilter" onchange="filterAssets()">
+            <option>Select...</option>
+            <option>● Fully Curated</option>
+            <option>◐ Partially Curated</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Data Domain</label>
+          <select class="filter-select" id="domainFilter" onchange="filterAssets()">
+            <option>Select...</option>
+            <option>Logistics</option>
+            <option>Transportation</option>
+            <option>Operations</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Search Assets</label>
+          <div class="search-wrapper">
+            <input type="text" class="search-input" id="searchInput" placeholder="Type to search..." oninput="filterTable(); updateClearButton();">
+            <button class="clear-search-btn" id="clearSearchBtn" title="Clear search">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="results-summary">
+        <div class="results-summary-item">
+          <span class="rs-label">📊 Assets Found</span>
+          <span class="rs-value" id="assetsCount">5</span>
+        </div>
+        <div class="results-summary-item">
+          <span class="rs-label">📋 Attributes Found</span>
+          <span class="rs-value" id="attributesCount">15</span>
+        </div>
+        <div class="attributes-info"><strong>Suggested:</strong> 5 attributes pending review</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="assets-list-box">
+        <div class="assets-list-header">📊 Assets List</div>
+        <div class="pagination-section">
+          <span>3116 assets | Page 1 of 312</span>
+          <div class="pagination-buttons">
+            <button class="pagination-btn">⏮</button>
+            <button class="pagination-btn">◀</button>
+            <button class="pagination-btn">▶</button>
+            <button class="pagination-btn">⏭</button>
+          </div>
+        </div>
+        <ul class="assets-ul">
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Air Transportation Utilization','Logistics','Data Assets','◐','air-001')">Air Transportation Utilization ◐</button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Customer Package Pickup','Logistics','Data Assets','●','cust-002')">Customer Package Pickup ●</button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Customer Registration User Identification','Transportation','Data Assets','●','cust-003')">Customer Registration User Identification ●</button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue and Volume by Business Partner and Owner','Logistics','Data Assets','◐','daily-004')">Daily Commercial Revenue and Volume by Business Partner and Owner ◐</button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue and Volume by Sales Account-Based Information','Logistics','Data Assets','●','daily-005')">Daily Commercial Revenue and Volume by Sales Account-Based Information ●</button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Expedited Packaging Supplies Items','Operations','Data Assets','●','exp-006')">Expedited Packaging Supplies Items ●</button></li>
+        </ul>
+
+        <div class="asset-info-panel" id="assetInfoPanel">
+          <div class="asset-info-box">
+            👉 <span id="assetName"></span> <span id="assetStatus" style="opacity:0.85;"></span>
+          </div>
+          <div class="asset-info-details">
+            <div class="asset-info-row">
+              <div class="asset-info-label">Description</div>
+              <div class="asset-info-value">—</div>
+            </div>
+            <div class="asset-info-row">
+              <div class="asset-info-label">Domain</div>
+              <div class="asset-info-value" id="domainInfo">None</div>
+            </div>
+            <div class="asset-info-row">
+              <div class="asset-info-label">Category</div>
+              <div class="asset-info-value" id="categoryInfo">—</div>
+            </div>
+            <div class="asset-info-row">
+              <div class="asset-info-label">Asset URL</div>
+              <div class="asset-info-value link" id="urlInfo">—</div>
+            </div>
+          </div>
+          <button class="hide-btn" onclick="closeAssetInfo()">▲ Hide Details</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="data-main">
+    <div class="asset-name-banner">
+      <h2 id="assetNameBanner">Select an asset to view details</h2>
+    </div>
+    <div class="attributes-banner">
+      <div class="banner-item">
+        <span class="banner-label">📋 Attributes Found</span>
+        <span class="banner-value" id="attributesBannerCount">15</span>
+      </div>
+      <div class="banner-item">
+        <span class="banner-label">⚠️ Pending Review</span>
+        <span class="banner-value warning">5</span>
+      </div>
+      <div class="banner-item">
+        <span class="banner-label">🤖 AI Suggestions</span>
+        <span class="banner-value" style="color:#07a41e">5</span>
+      </div>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:14%">Field Name</th>
+            <th style="width:18%">Standardized Name</th>
+            <th style="width:18%">Suggested Functional Name 🤖</th>
+            <th style="width:15%">Description</th>
+            <th style="width:20%">Suggested Description 🤖</th>
+            <th style="width:15%">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr>
+            <td><button class="field-name" onclick="openModal('Last Refresh Date Time','Last Data Refresh Timestamp','The date and time when data was last updated in the system.','Most recent date and time when this asset data was refreshed from source.')">last_refreshed_dtm</button></td>
+            <td>Last Refresh Date Time</td>
+            <td class="ai-col">Last Data Refresh Timestamp</td>
+            <td>The date and time when data was last updated in the system.</td>
+            <td class="ai-col-desc">Most recent date and time when this asset data was refreshed from source.</td>
+            <td><button class="edit-btn" onclick="openModal('Last Refresh Date Time','Last Data Refresh Timestamp','The date and time when data was last updated in the system.','Most recent date and time when this asset data was refreshed from source.')">✎ Edit</button></td>
+          </tr>
+          <tr>
+            <td><button class="field-name" onclick="openModal('UPS Actual Weight','UPS Actual Weight Pounds','Weight measure for UPS shipments.','The total weight (in pounds) of all handling units assigned to UPS.')">ups_actual</button></td>
+            <td>United Parcel Service Actual Weight</td>
+            <td class="ai-col">UPS Actual Weight Pounds</td>
+            <td>Weight measure for United Parcel Service shipments.</td>
+            <td class="ai-col-desc">The total weight (in pounds) of all handling units assigned to UPS.</td>
+            <td><button class="edit-btn" onclick="openModal('UPS Actual Weight','UPS Actual Weight Pounds','Weight measure for UPS shipments.','The total weight (in pounds) of all handling units assigned to UPS.')">✎ Edit</button></td>
+          </tr>
+          <tr>
+            <td><button class="field-name" onclick="openModal('Air Transportation Location Unit','Air Stop Location Code','Code identifying air transportation location.','The air stop (location) of the contracted Transportation Handler (THS).')">unit_code</button></td>
+            <td>Air Transportation Location Unit</td>
+            <td class="ai-col">Air Stop Location Code</td>
+            <td>Code identifying the air transportation handling location.</td>
+            <td class="ai-col-desc">The air stop (location) of the contracted Transportation Handler (THS).</td>
+            <td><button class="edit-btn" onclick="openModal('Air Transportation Location Unit','Air Stop Location Code','Code identifying air transportation location.','The air stop (location) of the contracted Transportation Handler (THS).')">✎ Edit</button></td>
+          </tr>
+          <tr>
+            <td><button class="field-name" onclick="openModal('CAIR Network Utilization %','CAIR Network Utilization %','Percentage of network capacity used by commercial air carriers.','Commercial Air (CAIR) network Utilization Percentage calculated as CAIR Actual weight divided by CAIR Planned weight.')">cair_util_pct</button></td>
+            <td>Commercial Air Carriers Utilization %</td>
+            <td class="ai-col">CAIR Network Utilization %</td>
+            <td>Percentage of network capacity used by commercial air carriers.</td>
+            <td class="ai-col-desc">Commercial Air (CAIR) network Utilization Percentage calculated as CAIR Actual weight divided by CAIR Planned weight.</td>
+            <td><button class="edit-btn" onclick="openModal('CAIR Network Utilization %','CAIR Network Utilization %','Percentage of network capacity used by commercial air carriers.','Commercial Air (CAIR) network Utilization Percentage calculated as CAIR Actual weight divided by CAIR Planned weight.')">✎ Edit</button></td>
+          </tr>
+          <tr>
+            <td><button class="field-name" onclick="openModal('FedEx Actual Shipment Volume','FedEx Actual Shipment Volume','Volume of actual shipments processed through FedEx network.','Federal Express (FedEx) Utilization measures the planned and actual FedEx transportation volumes at the air stop level.')">fedex_actual</button></td>
+            <td>Federal Express Actual Volume</td>
+            <td class="ai-col">FedEx Actual Shipment Volume</td>
+            <td>Volume of actual shipments processed through FedEx network.</td>
+            <td class="ai-col-desc">Federal Express (FedEx) Utilization measures the planned and actual FedEx transportation volumes at the air stop level.</td>
+            <td><button class="edit-btn" onclick="openModal('FedEx Actual Shipment Volume','FedEx Actual Shipment Volume','Volume of actual shipments processed through FedEx network.','Federal Express (FedEx) Utilization measures the planned and actual FedEx transportation volumes at the air stop level.')">✎ Edit</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+</div>
+</div><!-- /page-explore -->
+
+
+<!-- ══════════════════════════════════════
+     PAGE 3 — CHANGE SUGGESTIONS
+══════════════════════════════════════ -->
+<div class="page" id="page-changes">
+
+  <!-- Top action bar -->
+  <div class="cs-topbar">
+    <div class="cs-topbar-title" id="cs-selected-title">Select a change suggestion</div>
+    <div class="cs-actions">
+      <button class="cs-action-btn" onclick="csDelete()">🗑 Delete</button>
+      <button class="cs-action-btn" onclick="csSave()">💾 Save</button>
+      <button class="cs-action-btn submit" onclick="csSubmit()">👤 Submit</button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="cs-body">
+
+    <!-- Left panel -->
+    <div class="cs-sidebar">
+
+      <div>
+        <div class="cs-sidebar-label">Submission Status</div>
+        <select class="cs-status-select" id="cs-status" onchange="filterSuggestions()">
+          <option value="">Select status...</option>
+          <option value="draft">Draft</option>
+          <option value="submitted">Submitted</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="cs-suggestions-label">Select Suggestion below</div>
+        <div id="cs-list">
+          <!-- Default: no submissions -->
+          <div class="cs-no-results" id="cs-empty">No submissions found</div>
+          <!-- Populated suggestion items (hidden by default) -->
+          <div id="cs-items" style="display:none;display:flex;flex-direction:column;gap:8px;">
+            <div class="cs-suggestion-item" onclick="selectSuggestion(this,'last_refreshed_dtm — Last Data Refresh Timestamp')">
+              <div class="cs-suggestion-name">last_refreshed_dtm</div>
+              <div class="cs-suggestion-meta">Last Data Refresh Timestamp · Draft</div>
+            </div>
+            <div class="cs-suggestion-item" onclick="selectSuggestion(this,'ups_actual — UPS Actual Weight Pounds')">
+              <div class="cs-suggestion-name">ups_actual</div>
+              <div class="cs-suggestion-meta">UPS Actual Weight Pounds · Draft</div>
+            </div>
+            <div class="cs-suggestion-item" onclick="selectSuggestion(this,'unit_code — Air Stop Location Code')">
+              <div class="cs-suggestion-name">unit_code</div>
+              <div class="cs-suggestion-meta">Air Stop Location Code · Submitted</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="cs-sidebar-footer">
+        <div class="cs-toggle-row">
+          <button class="sort-btn active" id="sort-toggle" onclick="toggleSort()" title="Toggle alphabetical sorting">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18"></path>
+            </svg>
+            Sort A-Z
+          </button>
+        </div>
+        <button class="cs-refresh-btn" onclick="csRefresh()">Refresh</button>
+      </div>
+
+    </div>
+
+    <!-- Right main area -->
+    <div class="cs-main" id="cs-main-content">
+      <span>Select a change suggestion from the left panel to view details</span>
+    </div>
+
+  </div>
+</div><!-- /page-changes -->
+
+
+<!-- ══════════════════════════════════════
+     MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h2>Edit Data Asset</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title">📝 Functional Name</div>
+        <div class="comparison-row">
+          <div class="comparison-col">
+            <div class="col-label">Current Value</div>
+            <div class="col-value" id="currentName"></div>
+          </div>
+          <div class="comparison-col suggested">
+            <div class="col-label">🤖 AI Suggested</div>
+            <div class="col-value" id="suggestedName"></div>
+          </div>
+        </div>
+        <div class="edit-section">
+          <label>✎ Edit Suggested Functional Name</label>
+          <textarea id="functionalInput" maxlength="500"></textarea>
+          <div class="char-count"><span id="functionalCount">0</span> / 500 characters</div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">📄 Description</div>
+        <div class="comparison-row">
+          <div class="comparison-col">
+            <div class="col-label">Current Value</div>
+            <div class="col-value" id="currentDesc"></div>
+          </div>
+          <div class="comparison-col suggested">
+            <div class="col-label">🤖 AI Suggested</div>
+            <div class="col-value" id="suggestedDesc"></div>
+          </div>
+        </div>
+        <div class="edit-section">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <label style="margin:0">✎ Edit Suggested Description</label>
+            <button class="modal-btn" style="padding:4px 10px;font-size:11px;" onclick="resetDescription()">↺ Reset</button>
+          </div>
+          <textarea id="descriptionInput" maxlength="1000"></textarea>
+          <div class="char-count"><span id="descriptionCount">0</span> / 1000 characters</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn danger" onclick="discardSuggestion()">Discard</button>
+      <button class="modal-btn primary" onclick="saveSuggestion()">Save Changes</button>
+      <button class="modal-btn success" onclick="submitSuggestion()">✓ Submit</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ── PAGE SWITCHING ─────────────────── */
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  ['welcome','explore','changes'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === page);
+  });
+}
+
+/* ── EXPLORE: SIDEBAR ASSET ─────────── */
+function selectAsset(btn, name, domain, category, status, url) {
+  document.querySelectorAll('.asset-btn').forEach(b => b.style.fontWeight = '500');
+  if (btn) btn.style.fontWeight = '700';
+  document.getElementById('assetNameBanner').textContent = name + '  ' + status;
+  document.getElementById('assetName').textContent = name;
+  document.getElementById('assetStatus').textContent = status;
+  document.getElementById('domainInfo').textContent = domain;
+  document.getElementById('categoryInfo').textContent = category;
+  document.getElementById('urlInfo').textContent = url;
+  document.getElementById('assetInfoPanel').classList.add('show');
+}
+function closeAssetInfo() {
+  document.getElementById('assetInfoPanel').classList.remove('show');
+}
+
+/* ── EXPLORE: TABLE SEARCH ──────────── */
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const rows = document.querySelectorAll('#tableBody tr');
+  let visible = 0;
+  rows.forEach(row => {
+    const match = row.cells[0].textContent.toLowerCase().includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  document.getElementById('assetsCount').textContent = visible;
+  document.getElementById('attributesCount').textContent = visible * 3;
+  document.getElementById('attributesBannerCount').textContent = visible * 3;
+  updateClearButton();
+  // Also apply asset filters after search
+  filterAssets();
+}
+
+function updateClearButton() {
+  const clearBtn = document.getElementById('clearSearchBtn');
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput.value.length > 0) {
+    clearBtn.classList.add('show');
+  } else {
+    clearBtn.classList.remove('show');
+  }
+}
+
+function clearSearch() {
+  const searchInput = document.getElementById('searchInput');
+  searchInput.value = '';
+  filterTable();
+}
+
+function filterAssets() {
+  const curationFilter = document.getElementById('curationFilter').value;
+  const domainFilter = document.getElementById('domainFilter').value;
+  const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+  const assets = document.querySelectorAll('.assets-li');
+  
+  assets.forEach(asset => {
+    const button = asset.querySelector('.asset-btn');
+    const onclickAttr = button.getAttribute('onclick');
+    const assetText = button.textContent.toLowerCase();
+    
+    // Extract status and domain from onclick attribute
+    // Format: selectAsset(this,'Name','Domain','Category','Status','url')
+    const params = onclickAttr.match(/selectAsset\(this,'([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
+    if (params) {
+      const domain = params[2];
+      const status = params[4];
+      
+      let showAsset = true;
+      
+      // Apply search filter
+      if (searchQuery && !assetText.includes(searchQuery)) {
+        showAsset = false;
+      }
+      
+      // Apply curation status filter
+      if (curationFilter !== 'Select...') {
+        if (curationFilter === '● Fully Curated' && status !== '●') {
+          showAsset = false;
+        } else if (curationFilter === '◐ Partially Curated' && status !== '◐') {
+          showAsset = false;
+        }
+      }
+      
+      // Apply domain filter
+      if (domainFilter !== 'Select...' && domain !== domainFilter) {
+        showAsset = false;
+      }
+      
+      asset.style.display = showAsset ? '' : 'none';
+    }
+  });
+  
+  // Update counts after filtering
+  updateAssetCounts();
+}
+
+function updateAssetCounts() {
+  const visibleAssets = document.querySelectorAll('.assets-li:not([style*="display: none"])');
+  const assetsCount = visibleAssets.length;
+  const attributesCount = assetsCount * 3;
+  
+  document.getElementById('assetsCount').textContent = assetsCount;
+  document.getElementById('attributesCount').textContent = attributesCount;
+  document.getElementById('attributesBannerCount').textContent = attributesCount;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearSearchBtn');
+  if (searchInput) {
+    searchInput.addEventListener('oninput', updateClearButton);
+  }
+  if (clearBtn) {
+    clearBtn.addEventListener('click', clearSearch);
+  }
+});
+
+
+/* ── CHANGE SUGGESTIONS ─────────────── */
+let sortOn = false;
+
+function filterSuggestions() {
+  const status = document.getElementById('cs-status').value;
+  const empty  = document.getElementById('cs-empty');
+  const items  = document.getElementById('cs-items');
+  if (status) {
+    empty.style.display = 'none';
+    items.style.display = 'flex';
+  } else {
+    empty.style.display = 'block';
+    items.style.display = 'none';
+  }
+}
+
+function selectSuggestion(el, title) {
+  document.querySelectorAll('.cs-suggestion-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('cs-selected-title').textContent = title;
+  document.getElementById('cs-main-content').innerHTML = `
+    <div style="max-width:640px;width:100%;text-align:left;">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:#1a1a1a;">${title}</h3>
+      <div style="background:#f5f5f5;border-radius:6px;padding:16px;margin-bottom:16px;border:1px solid #e0e0e0;">
+        <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Functional Name</div>
+        <div style="font-size:13.5px;color:#1a1a1a;">${title.split('—')[1]?.trim() || '—'}</div>
+      </div>
+      <div style="background:#e8f2fc;border-radius:6px;padding:16px;border:1px solid #b8d4f0;">
+        <div style="font-size:11px;font-weight:700;color:#005ea2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Suggested Description</div>
+        <div style="font-size:13px;color:#1a1a1a;line-height:1.5;">AI-generated description for this attribute is pending your review and approval.</div>
+      </div>
+    </div>`;
+}
+
+function toggleSort() {
+  sortOn = !sortOn;
+  const sw = document.getElementById('sort-toggle');
+  sw.classList.toggle('active', sortOn);
+}
+
+function csDelete()  { if(confirm('Delete this suggestion?')) alert('Suggestion deleted.'); }
+function csSave()    { alert('✓ Saved!'); }
+function csSubmit()  { alert('✓ Submitted for review!'); }
+function csRefresh() {
+  document.getElementById('cs-status').value = '';
+  filterSuggestions();
+  document.getElementById('cs-selected-title').textContent = 'Select a change suggestion';
+  document.getElementById('cs-main-content').innerHTML = '<span>Select a change suggestion from the left panel to view details</span>';
+  document.querySelectorAll('.cs-suggestion-item').forEach(i => i.classList.remove('active'));
+}
+
+/* ── MODAL ──────────────────────────── */
+let originalDescription = '';
+function openModal(name, suggested, desc, suggestedDesc) {
+  document.getElementById('currentName').textContent  = name;
+  document.getElementById('suggestedName').textContent = suggested;
+  document.getElementById('currentDesc').textContent  = desc;
+  document.getElementById('suggestedDesc').textContent = suggestedDesc;
+  document.getElementById('functionalInput').value    = suggested;
+  document.getElementById('descriptionInput').value   = suggestedDesc;
+  originalDescription = suggestedDesc;
+  document.getElementById('functionalCount').textContent  = suggested.length;
+  document.getElementById('descriptionCount').textContent = suggestedDesc.length;
+  document.getElementById('modal').classList.add('active');
+}
+function closeModal() { document.getElementById('modal').classList.remove('active'); }
+function resetDescription() {
+  document.getElementById('descriptionInput').value = originalDescription;
+  document.getElementById('descriptionCount').textContent = originalDescription.length;
+}
+function saveSuggestion()    { alert('✓ Changes saved!'); closeModal(); }
+function discardSuggestion() { if(confirm('Discard this suggestion?')) { alert('Discarded.'); closeModal(); } }
+function submitSuggestion()  { alert('✓ Submitted for review!'); closeModal(); }
+
+document.getElementById('functionalInput').addEventListener('input', function() {
+  document.getElementById('functionalCount').textContent = this.value.length;
+});
+document.getElementById('descriptionInput').addEventListener('input', function() {
+  document.getElementById('descriptionCount').textContent = this.value.length;
+});
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
