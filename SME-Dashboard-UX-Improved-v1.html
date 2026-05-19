@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postal Data Wiki — SME Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── TOKENS ── */
+:root {
+  --blue:        #004B87;
+  --blue-dark:   #003566;
+  --blue-mid:    #005ea2;
+  --blue-light:  #e8f2fc;
+  --red:         #DA291C;
+  --yellow-safe: #b45309;   /* accessible amber — was #fdb913 (fails WCAG) */
+  --green:       #1a7a2e;
+  --green-bg:    #e6f4ea;
+  --gray-100:    #f5f5f5;
+  --gray-200:    #e8e8e8;
+  --gray-300:    #cccccc;
+  --gray-500:    #757575;
+  --gray-700:    #444444;
+  --gray-900:    #1a1a1a;
+  --white:       #ffffff;
+  --radius:      6px;
+  --shadow-sm:   0 1px 4px rgba(0,0,0,0.1);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.14);
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--gray-100);
+  color: var(--gray-900);
+  font-size: 15px;   /* was 13px — increased for readability */
+  line-height: 1.5;
+}
+
+/* ── HEADER ── */
+.app-header {
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 100%);
+  color: white;
+  display: flex; align-items: stretch;
+  height: 64px; position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.28);
+}
+.hdr-brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 20px;
+  border-right: 1px solid rgba(255,255,255,0.15);
+  min-width: 220px; flex-shrink: 0;
+}
+.hdr-logo { width: 72px; height: 72px; display: flex; align-items: center; }
+.hdr-logo svg { width: 100%; height: 100%; }
+.hdr-title { font-size: 14px; font-weight: 700; line-height: 1.25; }
+.hdr-sub   { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+
+.hdr-nav { display: flex; align-items: stretch; flex: 1; padding-left: 8px; }
+.nav-tab {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 22px;
+  color: rgba(255,255,255,0.75); font-size: 14px; font-weight: 500;
+  cursor: pointer; border-bottom: 3px solid transparent;
+  text-decoration: none; transition: all 0.18s;
+}
+.nav-tab:hover { color: white; background: rgba(255,255,255,0.08); }
+.nav-tab.active { color: white; border-bottom-color: #fdb913; background: rgba(255,255,255,0.10); font-weight: 600; }
+.nav-tab svg { width: 16px; height: 16px; opacity: 0.85; flex-shrink: 0; }
+
+.hdr-right {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 16px; border-left: 1px solid rgba(255,255,255,0.15);
+}
+.help-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.15); color: white;
+  border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius);
+  padding: 7px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+}
+.help-btn:hover { background: rgba(255,255,255,0.25); }
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  color: rgba(255,255,255,0.9); font-size: 13px;
+  padding: 4px 10px; border-radius: var(--radius); cursor: pointer;
+  transition: background 0.15s;
+}
+.user-chip:hover { background: rgba(255,255,255,0.1); }
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--blue-mid); border: 2px solid rgba(255,255,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white;
+}
+
+/* ── PAGE SWITCHER ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── ONBOARDING BANNER ── */
+.onboarding-banner {
+  background: #fff8e1; border-bottom: 2px solid #fdb913;
+  padding: 10px 24px; display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: #4a3500;
+}
+.onboarding-banner strong { color: #1a1a1a; }
+.onboarding-close {
+  margin-left: auto; background: none; border: none;
+  cursor: pointer; font-size: 18px; color: #6b5400;
+  line-height: 1; padding: 2px 6px; border-radius: 4px;
+}
+.onboarding-close:hover { background: rgba(0,0,0,0.08); }
+
+/* ── PAGE 1 — WELCOME ── */
+#page-welcome { padding: 36px 32px 48px; max-width: 960px; margin: 0 auto; }
+
+.welcome-heading { margin-bottom: 28px; }
+.welcome-heading h1 { font-size: 28px; font-weight: 700; line-height: 1.3; }
+.welcome-heading h1 a { color: var(--blue-mid); text-decoration: none; }
+.welcome-heading h1 a:hover { text-decoration: underline; }
+.welcome-heading p  { color: #4a5a6e; font-size: 15px; margin-top: 8px; max-width: 620px; line-height: 1.6; }
+
+/* Progress summary card */
+.progress-card {
+  background: white; border: 1px solid var(--gray-200);
+  border-radius: 10px; padding: 20px 24px;
+  display: flex; align-items: center; gap: 32px;
+  margin-bottom: 28px; box-shadow: var(--shadow-sm);
+}
+.progress-card-label { font-size: 13px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.progress-card-value { font-size: 26px; font-weight: 700; color: var(--blue); }
+.progress-card-value.warn { color: var(--yellow-safe); }
+.progress-card-divider { width: 1px; height: 48px; background: var(--gray-200); }
+.progress-bar-wrap { flex: 1; }
+.progress-bar-label { font-size: 13px; color: var(--gray-700); font-weight: 600; margin-bottom: 6px; }
+.progress-bar-track { height: 10px; background: var(--gray-200); border-radius: 10px; overflow: hidden; }
+.progress-bar-fill  { height: 100%; width: 18%; background: var(--blue); border-radius: 10px; transition: width 0.4s; }
+.progress-bar-note  { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+
+/* Steps grid */
+.steps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.step-card {
+  background: white; border: 1px solid var(--gray-200); border-radius: 10px;
+  padding: 20px 22px; display: flex; gap: 16px; align-items: flex-start;
+  box-shadow: var(--shadow-sm); transition: box-shadow 0.2s, border-color 0.2s;
+}
+.step-card:hover { box-shadow: var(--shadow-md); border-color: #b8d4f0; }
+
+.step-badge {
+  background: var(--blue); color: white; border-radius: 50%;
+  width: 48px; height: 48px; min-width: 48px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-badge svg { width: 22px; height: 22px; stroke: white; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.step-body h3 { font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--gray-900); }
+.step-body p  { font-size: 13.5px; color: #4a5a6e; line-height: 1.6; }
+
+.cta-row { margin-top: 32px; display: flex; align-items: center; gap: 16px; }
+.cta-btn {
+  background: var(--blue); color: white; border: none;
+  padding: 14px 36px; border-radius: var(--radius);
+  font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: background 0.15s; text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0,75,135,0.3);
+}
+.cta-btn:hover { background: var(--blue-dark); }
+.cta-note { font-size: 13px; color: var(--gray-500); }
+
+/* ── PAGE 2 — EXPLORE DATA ASSETS ── */
+#page-explore { display: none; }
+#page-explore.active { display: block; }
+
+.data-layout {
+  display: grid; grid-template-columns: 300px 1fr;
+  gap: 20px; padding: 20px;
+  max-width: 1600px; margin: 0 auto;
+  align-items: start;
+}
+
+/* ── SIDEBAR ── */
+.sidebar-section { margin-bottom: 16px; }
+
+.filter-panel {
+  background: white; border: 1px solid var(--gray-200);
+  padding: 18px 16px; border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.filter-panel-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--gray-900);
+}
+.filter-panel-sub { font-size: 13px; color: var(--gray-500); margin-bottom: 16px; line-height: 1.45; }
+
+/* Beginner Mode toggle — at the TOP now */
+.beginner-row {
+  background: #f0f7ff; border: 1px solid #c8dff7;
+  border-radius: 8px; padding: 12px 14px;
+  margin-bottom: 16px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.beginner-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
+.beginner-text-wrap { flex: 1; }
+.beginner-label { font-size: 14px; font-weight: 700; color: var(--blue); margin-bottom: 2px; }
+.beginner-subtext { font-size: 12px; color: #3a5a7a; line-height: 1.4; }
+/* Visual toggle switch */
+.toggle-switch {
+  width: 40px; height: 22px; background: var(--gray-300); border-radius: 11px;
+  position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; margin-top: 2px;
+  border: none; padding: 0;
+}
+.toggle-switch.on { background: var(--blue); }
+.toggle-knob {
+  width: 18px; height: 18px; background: white; border-radius: 50%;
+  position: absolute; top: 2px; left: 2px; transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  pointer-events: none;
+}
+.toggle-switch.on .toggle-knob { left: 20px; }
+
+.filter-divider { height: 1px; background: var(--gray-200); margin: 14px 0; }
+
+.filter-group { margin-bottom: 14px; }
+.filter-group:last-child { margin-bottom: 0; }
+.filter-label {
+  display: block; font-size: 13px; font-weight: 600;
+  margin-bottom: 6px; color: var(--gray-900);
+}
+
+/* Status filter as button pills */
+.status-pills { display: flex; flex-direction: column; gap: 6px; }
+.status-pill {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius);
+  border: 1.5px solid var(--gray-300); background: white;
+  cursor: pointer; font-size: 13px; font-family: inherit;
+  transition: all 0.15s; text-align: left; width: 100%; font-weight: 500;
+  color: var(--gray-700);
+}
+.status-pill:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
+.status-pill.active { border-color: var(--blue); background: var(--blue-light); color: var(--blue); font-weight: 700; }
+.status-pill-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.dot-all     { background: var(--gray-500); }
+.dot-full    { background: var(--green); }
+.dot-partial { background: var(--yellow-safe); }
+
+.filter-select, .search-input {
+  width: 100%; padding: 9px 11px;
+  border: 1.5px solid var(--gray-300); border-radius: var(--radius);
+  font-size: 14px; font-family: inherit; background: white;
+  color: var(--gray-900);
+}
+.filter-select:focus, .search-input:focus {
+  outline: none; border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,75,135,0.12);
+}
+.search-wrapper { position: relative; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--gray-500); font-size: 14px; pointer-events: none; }
+.search-input { padding-left: 30px; }
+.clear-search-btn {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--gray-500); font-size: 16px; padding: 2px 4px;
+  display: none; line-height: 1;
+}
+.clear-search-btn:hover { color: var(--gray-900); }
+.clear-search-btn.show { display: block; }
+
+.term-hint {
+  margin-top: 10px; background: #f7fbff; border: 1px solid #d8e7f7;
+  border-radius: var(--radius); padding: 9px 11px;
+  font-size: 12.5px; color: #3f556b; line-height: 1.5;
+}
+
+/* Results summary */
+.results-summary {
+  background: white; padding: 14px 16px; border-radius: 10px;
+  border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);
+}
+.results-summary-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13.5px;
+}
+.results-summary-item:last-child { border-bottom: none; padding-bottom: 0; }
+.rs-label { color: var(--gray-700); font-weight: 500; }
+.rs-value  { font-weight: 700; color: var(--blue); font-size: 18px; }
+.needs-review-note {
+  background: #fff3e0; border-left: 3px solid var(--yellow-safe);
+  border-radius: 4px; padding: 8px 11px; font-size: 12.5px;
+  color: #4a2e00; margin-top: 10px; line-height: 1.45;
+}
+.needs-review-note strong { color: var(--yellow-safe); }
+
+/* Asset list */
+.assets-list-box {
+  background: white; border-radius: 10px; border: 1px solid var(--gray-200);
+  overflow: hidden; box-shadow: var(--shadow-sm);
+}
+.assets-list-header {
+  background: var(--gray-100); padding: 11px 14px;
+  border-bottom: 1px solid var(--gray-200); font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.pagination-section {
+  padding: 8px 14px; border-bottom: 1px solid var(--gray-200);
+  font-size: 12.5px; color: var(--gray-500); font-weight: 500;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.pagination-buttons { display: flex; gap: 3px; }
+.pagination-btn {
+  background: white; border: 1px solid var(--gray-300); padding: 4px 8px;
+  border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.15s;
+  min-width: 28px; min-height: 28px; display: flex; align-items: center; justify-content: center;
+}
+.pagination-btn:hover { background: var(--blue-light); border-color: var(--blue); }
+
+.assets-ul { list-style: none; }
+.assets-li { border-bottom: 1px solid #f3f3f3; }
+.assets-li:last-child { border-bottom: none; }
+.asset-btn {
+  width: 100%; background: none; border: none; padding: 11px 14px;
+  cursor: pointer; font-family: inherit; text-align: left;
+  display: flex; align-items: flex-start; gap: 10px;
+  transition: background 0.12s;
+}
+.asset-btn:hover { background: var(--blue-light); }
+.asset-btn.selected { background: #dceeff; }
+.asset-btn-name { font-size: 13.5px; font-weight: 600; color: var(--blue-mid); flex: 1; line-height: 1.4; }
+.asset-btn:hover .asset-btn-name { text-decoration: underline; }
+
+/* Status badge pills in asset list */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+}
+.status-badge.full    { background: var(--green-bg); color: var(--green); }
+.status-badge.partial { background: #fff3e0; color: var(--yellow-safe); }
+.status-badge.pending { background: #fdecea; color: var(--red); }
+.status-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* Asset info panel */
+.asset-info-panel { display: none; border-top: 2px solid var(--gray-200); padding: 14px 16px; background: #f9fbff; }
+.asset-info-panel.show { display: block; }
+.asset-info-box {
+  padding: 10px 14px; background: var(--blue); color: white;
+  border-radius: var(--radius); margin-bottom: 12px; font-size: 13px; font-weight: 600; line-height: 1.5;
+}
+.asset-info-details { font-size: 13px; }
+.asset-info-row { margin-bottom: 10px; }
+.asset-info-label { font-weight: 700; color: var(--gray-900); margin-bottom: 2px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+.asset-info-value { color: var(--gray-700); }
+.asset-info-value.link { color: var(--blue-mid); }
+.hide-btn {
+  width: 100%; margin-top: 10px; padding: 8px; background: var(--gray-100);
+  border: 1px solid var(--gray-300); border-radius: var(--radius); cursor: pointer;
+  font-size: 13px; font-weight: 600; font-family: inherit; color: var(--gray-700);
+  transition: all 0.15s;
+}
+.hide-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+/* ── MAIN DATA AREA ── */
+.data-main { display: flex; flex-direction: column; gap: 16px; }
+
+.asset-name-banner {
+  background: white; padding: 16px 20px; border-radius: 10px;
+  border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);
+}
+.asset-name-banner h2 { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+
+/* Empty state */
+.no-asset-guidance {
+  background: white; border: 1px solid var(--gray-200);
+  border-radius: 10px; padding: 36px 28px; text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.no-asset-guidance .empty-icon { font-size: 48px; margin-bottom: 16px; display: block; }
+.no-asset-guidance h3 { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+.no-asset-guidance p  { font-size: 14px; color: var(--gray-500); line-height: 1.6; max-width: 440px; margin: 0 auto 20px; }
+.no-asset-guidance .guide-steps { display: flex; flex-direction: column; gap: 8px; text-align: left; max-width: 380px; margin: 0 auto; }
+.guide-step { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: var(--gray-700); }
+.guide-step-num {
+  background: var(--blue); color: white; border-radius: 50%;
+  width: 22px; height: 22px; min-width: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+
+/* Attributes banner */
+.attributes-banner {
+  background: white; padding: 16px 20px; border-radius: 10px;
+  border: 1px solid var(--gray-200);
+  display: flex; gap: 28px; align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+.banner-item { display: flex; flex-direction: column; }
+.banner-label { font-size: 12px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.banner-value { font-size: 24px; font-weight: 700; color: var(--blue); }
+.banner-value.warn { color: var(--yellow-safe); }
+.banner-value.ok   { color: var(--green); }
+.banner-divider    { width: 1px; height: 40px; background: var(--gray-200); }
+.banner-note { font-size: 13px; color: var(--gray-500); flex: 1; line-height: 1.5; }
+
+/* Table */
+.table-container {
+  background: white; border-radius: 10px; overflow-x: auto;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200);
+}
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.45; }
+thead { background: var(--blue); color: white; }
+thead th {
+  padding: 13px 14px; text-align: left; font-weight: 600;
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+  white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.08);
+}
+thead th:last-child { border-right: none; }
+.th-help {
+  display: block; margin-top: 3px; font-size: 10.5px;
+  color: rgba(255,255,255,0.7); text-transform: none; letter-spacing: normal;
+  font-weight: 400;
+}
+/* AI column header marker */
+.th-ai-badge {
+  display: inline-block; background: #fdb913; color: #1a1a00;
+  font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 20px;
+  margin-left: 6px; text-transform: none; letter-spacing: 0; vertical-align: middle;
+}
+tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.1s; cursor: pointer; }
+tbody tr:hover { background: var(--blue-light); }
+tbody td { padding: 12px 14px; vertical-align: top; }
+
+/* Field name (technical) — hidden in beginner mode */
+.field-name {
+  background: none; border: none; color: var(--blue-mid); cursor: pointer;
+  font-weight: 600; font-size: 12.5px; font-family: 'Courier New', monospace; padding: 0; text-align: left;
+}
+.field-name:hover { text-decoration: underline; }
+
+.ai-col     { background: #f0f7ff; }
+.ai-col-desc{ background: #f0f7ff; }
+
+.edit-btn {
+  background: white; border: 1.5px solid var(--gray-300); padding: 7px 14px;
+  border-radius: var(--radius); cursor: pointer; font-size: 13px;
+  font-family: inherit; transition: all 0.15s; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  min-height: 36px;
+}
+.edit-btn:hover { background: var(--blue); border-color: var(--blue); color: white; }
+
+/* Acronym tooltip */
+.acronym {
+  position: relative; border-bottom: 1px dotted var(--blue-mid);
+  cursor: help; font-weight: 600;
+}
+.acronym:hover::after,
+.acronym:focus::after {
+  content: attr(data-tooltip);
+  position: absolute; left: 0; bottom: calc(100% + 6px);
+  background: #1e2f42; color: white; border-radius: 4px;
+  padding: 6px 10px; font-size: 12px; line-height: 1.35;
+  white-space: nowrap; z-index: 50;
+}
+
+/* Beginner mode hides technical elements */
+body.beginner-mode .advanced-term,
+body.beginner-mode .col-advanced,
+body.beginner-mode .technical-hint {
+  display: none;
+}
+
+/* ── PAGE 3 — CHANGE SUGGESTIONS ── */
+#page-changes { display: none; }
+#page-changes.active { display: flex; flex-direction: column; height: calc(100vh - 64px); }
+
+.cs-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; background: white;
+  border-bottom: 1px solid var(--gray-200); flex-shrink: 0;
+}
+.cs-topbar-left { display: flex; flex-direction: column; }
+.cs-topbar-title { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+.cs-topbar-sub   { font-size: 12.5px; color: var(--gray-500); margin-top: 2px; }
+.cs-actions { display: flex; gap: 8px; }
+
+.cs-action-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: white; border: 1.5px solid var(--gray-300);
+  padding: 8px 16px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; color: var(--gray-700); transition: all 0.15s;
+  min-height: 38px;
+}
+.cs-action-btn:hover { border-color: var(--blue); color: var(--blue); }
+.cs-action-btn.submit { background: var(--blue); color: white; border-color: var(--blue); }
+.cs-action-btn.submit:hover { background: var(--blue-dark); }
+.cs-action-btn.danger { color: var(--red); border-color: #fad0cd; }
+.cs-action-btn.danger:hover { background: #fdecea; border-color: var(--red); }
+
+.cs-body { display: flex; flex: 1; overflow: hidden; }
+
+.cs-sidebar {
+  width: 256px; flex-shrink: 0;
+  background: var(--gray-100); border-right: 1px solid var(--gray-200);
+  display: flex; flex-direction: column; padding: 16px 14px;
+  gap: 14px; overflow-y: auto;
+}
+.cs-sidebar-label { font-size: 13px; font-weight: 700; color: var(--gray-900); }
+.cs-sidebar-sub   { font-size: 12px; color: var(--gray-500); margin-top: 3px; line-height: 1.4; }
+
+.cs-status-select {
+  width: 100%; padding: 9px 11px; border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius); font-size: 13.5px; font-family: inherit;
+  background: white; cursor: pointer; color: var(--gray-900);
+}
+.cs-status-select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,75,135,0.12); }
+
+/* Empty / no-results state */
+.cs-no-results {
+  background: white; border: 1px solid var(--gray-200); border-radius: 10px;
+  padding: 20px 16px; font-size: 13.5px; color: var(--gray-700);
+  line-height: 1.5; text-align: center;
+}
+.cs-no-results strong { display: block; font-size: 14px; color: var(--gray-900); margin-bottom: 6px; }
+
+.cs-suggestion-item {
+  background: white; border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+  padding: 11px 13px; cursor: pointer; transition: all 0.15s; font-size: 13px;
+}
+.cs-suggestion-item:hover { border-color: var(--blue-mid); background: var(--blue-light); }
+.cs-suggestion-item.active { border-color: var(--blue); background: #dceeff; border-left: 3px solid var(--blue); }
+.cs-suggestion-name { font-weight: 700; color: var(--gray-900); margin-bottom: 3px; font-size: 13.5px; }
+.cs-suggestion-meta { color: var(--gray-500); font-size: 12px; }
+
+.cs-sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+
+.sort-btn {
+  padding: 9px 14px; background: white; border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius); cursor: pointer; font-size: 13px; font-weight: 600;
+  color: var(--gray-700); display: flex; align-items: center; gap: 6px;
+  transition: all 0.15s; font-family: inherit;
+}
+.sort-btn:hover { background: var(--gray-100); border-color: var(--gray-700); }
+.sort-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+.sort-btn svg { width: 14px; height: 14px; }
+
+.cs-refresh-btn {
+  width: 100%; padding: 11px; background: var(--gray-700); color: white;
+  border: none; border-radius: var(--radius); font-size: 13.5px; font-weight: 600;
+  font-family: inherit; cursor: pointer; transition: background 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.cs-refresh-btn:hover { background: var(--gray-900); }
+
+.cs-main {
+  flex: 1; background: white; display: flex;
+  align-items: center; justify-content: center;
+  overflow-y: auto; padding: 40px;
+}
+.cs-main-empty { text-align: center; max-width: 400px; }
+.cs-main-empty .empty-icon { font-size: 52px; margin-bottom: 16px; display: block; }
+.cs-main-empty h3 { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+.cs-main-empty p  { font-size: 14px; color: var(--gray-500); line-height: 1.6; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 500;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal-dialog {
+  background: white; border-radius: 12px; width: 100%;
+  max-width: 720px; max-height: 92vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+  display: flex; flex-direction: column;
+}
+.modal-header {
+  background: var(--blue); color: white; padding: 18px 24px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  border-radius: 12px 12px 0 0; flex-shrink: 0;
+}
+.modal-header-text h2 { font-size: 16px; font-weight: 700; }
+.modal-header-text p  { font-size: 12.5px; opacity: 0.8; margin-top: 3px; }
+.modal-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; opacity: 0.8; line-height: 1; padding: 0; margin-top: -2px; }
+.modal-close:hover { opacity: 1; }
+
+.modal-body { padding: 24px; flex: 1; }
+.modal-section { margin-bottom: 24px; }
+.modal-section:last-child { margin-bottom: 0; }
+.modal-section-title {
+  font-size: 14px; font-weight: 700; padding-bottom: 10px;
+  border-bottom: 2px solid var(--gray-200); margin-bottom: 14px;
+  color: var(--gray-900);
+}
+
+.comparison-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.comparison-col {
+  padding: 13px 14px; background: var(--gray-100);
+  border-radius: var(--radius); border-left: 4px solid var(--gray-300);
+}
+.comparison-col.suggested { background: var(--blue-light); border-left-color: var(--blue); }
+.col-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--gray-500); margin-bottom: 6px; }
+.comparison-col.suggested .col-label { color: var(--blue-mid); }
+.col-value { font-size: 14px; color: var(--gray-900); line-height: 1.55; }
+.ai-suggested-label {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 6px;
+}
+.ai-chip {
+  background: #fdb913; color: #1a1000; font-size: 10px; font-weight: 800;
+  padding: 1px 7px; border-radius: 20px; text-transform: none;
+}
+
+.edit-section { background: var(--blue-light); padding: 14px; border-radius: var(--radius); }
+.edit-section label { display: block; font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; }
+textarea {
+  width: 100%; padding: 11px 13px; border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius); font-family: inherit; font-size: 14px;
+  min-height: 92px; resize: vertical; background: white; color: var(--gray-900);
+}
+textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,75,135,0.12); }
+.char-count { font-size: 11px; color: var(--gray-500); text-align: right; margin-top: 5px; }
+
+.modal-footer {
+  background: var(--gray-100); border-top: 1px solid var(--gray-200);
+  padding: 16px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-radius: 0 0 12px 12px; flex-shrink: 0;
+  gap: 10px;
+}
+.modal-footer-left { display: flex; gap: 8px; }
+.modal-footer-right { display: flex; gap: 8px; }
+.modal-btn {
+  padding: 9px 20px; font-size: 13.5px; font-weight: 600;
+  border-radius: var(--radius); cursor: pointer; border: 1.5px solid var(--gray-300);
+  background: white; font-family: inherit; transition: all 0.15s;
+  min-height: 40px;
+}
+.modal-btn:hover { border-color: var(--blue); color: var(--blue); }
+.modal-btn.primary { background: var(--blue); color: white; border-color: var(--blue); }
+.modal-btn.primary:hover { background: var(--blue-dark); }
+.modal-btn.success { background: var(--green); color: white; border-color: var(--green); }
+.modal-btn.success:hover { background: #155e24; }
+.modal-btn.danger  { color: var(--red); border-color: #fad0cd; font-size: 12.5px; padding: 9px 14px; }
+.modal-btn.danger:hover  { background: #fdecea; border-color: var(--red); }
+
+/* ── FOCUS RINGS ── */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="app-header">
+  <div class="hdr-brand">
+    <div class="hdr-logo">
+      <img src="../../Survey Pop Up/Survey Pop Up/images/CDAO_logo_white.svg" alt="CDAO Logo" style="width:100%;height:100%;object-fit:contain;">
+    </div>
+    <div>
+      <div class="hdr-title">Postal Data Wiki</div>
+      <div class="hdr-sub">SME Dashboard · Data Asset Review</div>
+    </div>
+  </div>
+
+  <nav class="hdr-nav" aria-label="Main navigation">
+    <a class="nav-tab active" id="tab-welcome" href="#" onclick="showPage('welcome');return false;" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a class="nav-tab" id="tab-explore" href="#" onclick="showPage('explore');return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Explore Assets
+    </a>
+    <a class="nav-tab" id="tab-changes" href="#" onclick="showPage('changes');return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Review Changes
+    </a>
+  </nav>
+
+  <div class="hdr-right">
+    <button class="help-btn" aria-label="Open help">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Help
+    </button>
+    <div class="user-chip" role="button" aria-label="User menu" tabindex="0">
+      <div class="avatar" aria-hidden="true">MS</div>
+      <span>Mar Solis</span>
+    </div>
+  </div>
+</header>
+
+
+<!-- ── ONBOARDING BANNER ── -->
+<div class="onboarding-banner" id="onboardingBanner" role="note" aria-label="Tip for new users">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.5" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  <span><strong>New here?</strong> Start on the <strong>Home</strong> tab — it explains exactly what to do, step by step. You can always return to it.</span>
+  <button class="onboarding-close" onclick="document.getElementById('onboardingBanner').style.display='none'" aria-label="Dismiss tip">×</button>
+</div>
+
+
+<!-- ── PAGE 1 — WELCOME ── -->
+<div class="page active" id="page-welcome">
+  <div id="page-welcome-inner">
+    <div class="welcome-heading">
+      <h1>Welcome, <a href="#">Mar Solis</a>!</h1>
+      <p>You're here to review data asset names and descriptions and make sure they make sense to everyone — not just data engineers. Work through one asset at a time.</p>
+    </div>
+
+    <!-- Progress summary -->
+    <div class="progress-card" role="region" aria-label="Your review progress">
+      <div>
+        <div class="progress-card-label">Assigned to You</div>
+        <div class="progress-card-value">24</div>
+      </div>
+      <div class="progress-card-divider" aria-hidden="true"></div>
+      <div>
+        <div class="progress-card-label">Completed</div>
+        <div class="progress-card-value" style="color:var(--green)">4</div>
+      </div>
+      <div class="progress-card-divider" aria-hidden="true"></div>
+      <div>
+        <div class="progress-card-label">Pending Review</div>
+        <div class="progress-card-value warn">5</div>
+      </div>
+      <div class="progress-card-divider" aria-hidden="true"></div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-label">Overall Progress</div>
+        <div class="progress-bar-track" role="progressbar" aria-valuenow="18" aria-valuemin="0" aria-valuemax="100" aria-label="18% complete">
+          <div class="progress-bar-fill"></div>
+        </div>
+        <div class="progress-bar-note">4 of 24 assets reviewed (18%)</div>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="steps-grid" role="list">
+      <div class="step-card" role="listitem">
+        <div class="step-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="15.5" y2="15.5"/></svg>
+        </div>
+        <div class="step-body">
+          <h3>Step 1 — Pick an Asset</h3>
+          <p>Go to <strong>Explore Assets</strong> and choose one item from the left list. Use the filters or search to narrow it down.</p>
+        </div>
+      </div>
+      <div class="step-card" role="listitem">
+        <div class="step-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="step-body">
+          <h3>Step 2 — Read the Fields</h3>
+          <p>Each asset has multiple fields. The table shows the current label and an AI-suggested label — read both to understand what needs fixing.</p>
+        </div>
+      </div>
+      <div class="step-card" role="listitem">
+        <div class="step-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <div class="step-body">
+          <h3>Step 3 — Edit for Clarity</h3>
+          <p>Click <strong>Edit</strong> on any field. Rewrite the name or description so a non-technical colleague would instantly understand it.</p>
+        </div>
+      </div>
+      <div class="step-card" role="listitem">
+        <div class="step-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="step-body">
+          <h3>Step 4 — Save or Submit</h3>
+          <p>Click <strong>Save Draft</strong> to continue later, or <strong>Submit</strong> when you're ready for a data steward to approve your changes.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <button class="cta-btn" onclick="showPage('explore')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Start Exploring Assets
+      </button>
+      <span class="cta-note">You have 5 assets pending your review</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── PAGE 2 — EXPLORE DATA ASSETS ── -->
+<div class="page" id="page-explore">
+<div class="data-layout">
+
+  <!-- Sidebar -->
+  <aside aria-label="Filter and asset list">
+
+    <!-- Filter panel -->
+    <div class="sidebar-section">
+      <div class="filter-panel">
+        <div class="filter-panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Find What You Need
+        </div>
+        <p class="filter-panel-sub">Use these options to find the right assets to review.</p>
+
+        <!-- Beginner Mode at TOP — prominent -->
+        <div class="beginner-row">
+          <span class="beginner-icon" aria-hidden="true">💡</span>
+          <div class="beginner-text-wrap">
+            <div class="beginner-label">Beginner Mode</div>
+            <div class="beginner-subtext">Hides technical codes so you only see plain-English names.</div>
+          </div>
+          <button
+            class="toggle-switch on"
+            id="beginnerModeBtn"
+            role="switch"
+            aria-checked="true"
+            aria-label="Beginner Mode"
+            onclick="toggleBeginnerMode(this)"
+          >
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+
+        <div class="filter-divider" aria-hidden="true"></div>
+
+        <!-- Status filter — visual pills instead of a select -->
+        <div class="filter-group">
+          <label class="filter-label" id="statusFilterLabel">Show Me</label>
+          <div class="status-pills" role="group" aria-labelledby="statusFilterLabel">
+            <button class="status-pill active" id="pill-all" onclick="setStatusPill('all')" aria-pressed="true">
+              <span class="status-pill-dot dot-all" aria-hidden="true"></span> All Assets
+            </button>
+            <button class="status-pill" id="pill-partial" onclick="setStatusPill('partial')" aria-pressed="false">
+              <span class="status-pill-dot dot-partial" aria-hidden="true"></span> Needs Review
+            </button>
+            <button class="status-pill" id="pill-full" onclick="setStatusPill('full')" aria-pressed="false">
+              <span class="status-pill-dot dot-full" aria-hidden="true"></span> Fully Reviewed
+            </button>
+          </div>
+        </div>
+
+        <!-- Domain filter -->
+        <div class="filter-group">
+          <label class="filter-label" for="domainFilter">Business Area</label>
+          <select class="filter-select" id="domainFilter" onchange="filterAssets()" aria-label="Filter by business area">
+            <option value="">All Areas</option>
+            <option>Logistics</option>
+            <option>Transportation</option>
+            <option>Operations</option>
+          </select>
+        </div>
+
+        <!-- Search -->
+        <div class="filter-group">
+          <label class="filter-label" for="searchInput">Search Assets</label>
+          <div class="search-wrapper">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input
+              type="search"
+              class="search-input"
+              id="searchInput"
+              placeholder="Type asset name..."
+              oninput="filterTable(); updateClearButton();"
+              aria-label="Search assets by name"
+              autocomplete="off"
+            >
+            <button class="clear-search-btn" id="clearSearchBtn" onclick="clearSearch()" aria-label="Clear search">×</button>
+          </div>
+        </div>
+
+        <div class="term-hint technical-hint" role="note">
+          <strong>Glossary:</strong> "Asset" = a data table or dataset. "Field" = a single column inside a dataset.
+        </div>
+      </div>
+    </div>
+
+    <!-- Results summary -->
+    <div class="sidebar-section">
+      <div class="results-summary" role="status" aria-live="polite" aria-label="Filter results summary">
+        <div class="results-summary-item">
+          <span class="rs-label">Assets Matching Filters</span>
+          <span class="rs-value" id="assetsCount" aria-live="polite">6</span>
+        </div>
+        <div class="results-summary-item">
+          <span class="rs-label">Fields Available</span>
+          <span class="rs-value" id="attributesCount">18</span>
+        </div>
+        <div class="needs-review-note" role="note">
+          <strong>5 fields</strong> are waiting for your review and plain-language descriptions.
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset list -->
+    <div class="sidebar-section">
+      <div class="assets-list-box">
+        <div class="assets-list-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="3"/></svg>
+          Asset List
+        </div>
+        <div class="pagination-section">
+          <span>3,116 total · Page 1 of 312</span>
+          <div class="pagination-buttons" role="group" aria-label="Pagination">
+            <button class="pagination-btn" aria-label="First page">⏮</button>
+            <button class="pagination-btn" aria-label="Previous page">◀</button>
+            <button class="pagination-btn" aria-label="Next page">▶</button>
+            <button class="pagination-btn" aria-label="Last page">⏭</button>
+          </div>
+        </div>
+
+        <ul class="assets-ul" role="listbox" aria-label="Data assets" id="assetsList">
+
+          <li class="assets-li" role="option" data-domain="Logistics" data-status="partial">
+            <button class="asset-btn" onclick="selectAsset(this,'Air Transportation Utilization','Logistics','Data Assets','partial','air-001')" aria-label="Air Transportation Utilization — needs review">
+              <div>
+                <div class="asset-btn-name">Air Transportation Utilization</div>
+                <span class="status-badge partial">Needs Review</span>
+              </div>
+            </button>
+          </li>
+
+          <li class="assets-li" role="option" data-domain="Logistics" data-status="full">
+            <button class="asset-btn" onclick="selectAsset(this,'Customer Package Pickup','Logistics','Data Assets','full','cust-002')" aria-label="Customer Package Pickup — fully reviewed">
+              <div>
+                <div class="asset-btn-name">Customer Package Pickup</div>
+                <span class="status-badge full">Fully Reviewed</span>
+              </div>
+            </button>
+          </li>
+
+          <li class="assets-li" role="option" data-domain="Transportation" data-status="full">
+            <button class="asset-btn" onclick="selectAsset(this,'Customer Registration User Identification','Transportation','Data Assets','full','cust-003')" aria-label="Customer Registration User Identification — fully reviewed">
+              <div>
+                <div class="asset-btn-name">Customer Registration — User ID</div>
+                <span class="status-badge full">Fully Reviewed</span>
+              </div>
+            </button>
+          </li>
+
+          <li class="assets-li" role="option" data-domain="Logistics" data-status="partial">
+            <button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue and Volume by Business Partner','Logistics','Data Assets','partial','daily-004')" aria-label="Daily Commercial Revenue and Volume by Business Partner — needs review">
+              <div>
+                <div class="asset-btn-name">Daily Revenue by Business Partner</div>
+                <span class="status-badge partial">Needs Review</span>
+              </div>
+            </button>
+          </li>
+
+          <li class="assets-li" role="option" data-domain="Logistics" data-status="full">
+            <button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue by Sales Account','Logistics','Data Assets','full','daily-005')" aria-label="Daily Commercial Revenue by Sales Account — fully reviewed">
+              <div>
+                <div class="asset-btn-name">Daily Revenue by Sales Account</div>
+                <span class="status-badge full">Fully Reviewed</span>
+              </div>
+            </button>
+          </li>
+
+          <li class="assets-li" role="option" data-domain="Operations" data-status="full">
+            <button class="asset-btn" onclick="selectAsset(this,'Expedited Packaging Supplies Items','Operations','Data Assets','full','exp-006')" aria-label="Expedited Packaging Supplies Items — fully reviewed">
+              <div>
+                <div class="asset-btn-name">Expedited Packaging Supplies</div>
+                <span class="status-badge full">Fully Reviewed</span>
+              </div>
+            </button>
+          </li>
+
+        </ul>
+
+        <!-- Asset info inline panel -->
+        <div class="asset-info-panel" id="assetInfoPanel" role="region" aria-label="Selected asset details" aria-live="polite">
+          <div class="asset-info-box">
+            <span id="assetName"></span>
+          </div>
+          <div class="asset-info-details">
+            <div class="asset-info-row">
+              <div class="asset-info-label">Business Area</div>
+              <div class="asset-info-value" id="domainInfo">—</div>
+            </div>
+            <div class="asset-info-row">
+              <div class="asset-info-label">Category</div>
+              <div class="asset-info-value" id="categoryInfo">—</div>
+            </div>
+            <div class="asset-info-row">
+              <div class="asset-info-label">Asset ID</div>
+              <div class="asset-info-value link" id="urlInfo">—</div>
+            </div>
+          </div>
+          <button class="hide-btn" onclick="closeAssetInfo()">▲ Hide Details</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+
+  <!-- Main content area -->
+  <main class="data-main" aria-label="Asset field details">
+
+    <div class="asset-name-banner">
+      <h2 id="assetNameBanner">Select an asset from the list to begin reviewing</h2>
+    </div>
+
+    <!-- Empty state — shown before selection -->
+    <div class="no-asset-guidance" id="noAssetGuidance" role="status">
+      <span class="empty-icon" aria-hidden="true">📋</span>
+      <h3>No asset selected yet</h3>
+      <p>Choose an asset from the left list to load its fields, see AI suggestions, and write plain-language descriptions.</p>
+      <div class="guide-steps" role="list" aria-label="Quick steps">
+        <div class="guide-step" role="listitem">
+          <span class="guide-step-num" aria-hidden="true">1</span>
+          Use <strong>Show Me</strong> filters or search to find assets
+        </div>
+        <div class="guide-step" role="listitem">
+          <span class="guide-step-num" aria-hidden="true">2</span>
+          Click an asset name in the list on the left
+        </div>
+        <div class="guide-step" role="listitem">
+          <span class="guide-step-num" aria-hidden="true">3</span>
+          Click <strong>Edit</strong> on any field to improve its description
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset content — shown after selection -->
+    <div id="assetContent" style="display:none; display:flex; flex-direction:column; gap:16px;">
+
+      <!-- Stats banner -->
+      <div class="attributes-banner" role="region" aria-label="Asset field summary">
+        <div class="banner-item">
+          <span class="banner-label">Total Fields</span>
+          <span class="banner-value" id="attributesBannerCount">15</span>
+        </div>
+        <div class="banner-divider" aria-hidden="true"></div>
+        <div class="banner-item">
+          <span class="banner-label">Needs Your Review</span>
+          <span class="banner-value warn">5</span>
+        </div>
+        <div class="banner-divider" aria-hidden="true"></div>
+        <div class="banner-item">
+          <span class="banner-label">AI Suggestions Ready</span>
+          <span class="banner-value ok">5</span>
+        </div>
+        <div class="banner-divider" aria-hidden="true"></div>
+        <p class="banner-note">Use clear, everyday language. Avoid abbreviations that a new employee wouldn't know.</p>
+      </div>
+
+      <!-- Fields table -->
+      <div class="table-container" role="region" aria-label="Asset fields table">
+        <table aria-label="Fields for selected asset">
+          <thead>
+            <tr>
+              <th class="col-advanced" style="width:12%" scope="col">
+                Technical Code
+                <span class="th-help">System field name (hidden in Beginner Mode)</span>
+              </th>
+              <th style="width:18%" scope="col">
+                Current Label
+                <span class="th-help">The name currently in use</span>
+              </th>
+              <th style="width:20%" scope="col">
+                AI Suggested Label <span class="th-ai-badge">AI</span>
+                <span class="th-help">Proposed improved label — edit before approving</span>
+              </th>
+              <th style="width:15%" scope="col">
+                Current Description
+                <span class="th-help">The description currently in use</span>
+              </th>
+              <th style="width:22%" scope="col">
+                AI Suggested Description <span class="th-ai-badge">AI</span>
+                <span class="th-help">Edit so any employee would understand it</span>
+              </th>
+              <th style="width:13%" scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td class="col-advanced">
+                <button class="field-name" onclick="openModal('last_refreshed_dtm','Last Refresh Date Time','Last Data Refresh Timestamp','The date and time when data was last updated in the system.','Most recent date and time when this asset data was refreshed from source.')" aria-label="View technical name: last_refreshed_dtm">last_refreshed_dtm</button>
+              </td>
+              <td>Last Refresh Date Time</td>
+              <td class="ai-col">Last Data Refresh Timestamp</td>
+              <td>The date and time when data was last updated in the system.</td>
+              <td class="ai-col-desc">Most recent date and time when this asset data was refreshed from source.</td>
+              <td><button class="edit-btn" onclick="openModal('last_refreshed_dtm','Last Refresh Date Time','Last Data Refresh Timestamp','The date and time when data was last updated in the system.','Most recent date and time when this asset data was refreshed from source.')" aria-label="Edit Last Refresh Date Time">✎ Edit</button></td>
+            </tr>
+            <tr>
+              <td class="col-advanced">
+                <button class="field-name" onclick="openModal('ups_actual','UPS Actual Weight','UPS Actual Weight Pounds','Weight measure for UPS shipments.','The total weight (in pounds) of all handling units assigned to UPS.')" aria-label="View technical name: ups_actual">ups_actual</button>
+              </td>
+              <td>United Parcel Service (<span class="acronym" tabindex="0" data-tooltip="UPS: United Parcel Service">UPS</span>) Actual Weight</td>
+              <td class="ai-col"><span class="acronym" tabindex="0" data-tooltip="UPS: United Parcel Service">UPS</span> Actual Weight Pounds</td>
+              <td>Weight measure for <span class="acronym" tabindex="0" data-tooltip="UPS: United Parcel Service">UPS</span> shipments.</td>
+              <td class="ai-col-desc">The total weight (in pounds) of all handling units assigned to <span class="acronym" tabindex="0" data-tooltip="UPS: United Parcel Service">UPS</span>.</td>
+              <td><button class="edit-btn" onclick="openModal('ups_actual','UPS Actual Weight','UPS Actual Weight Pounds','Weight measure for UPS shipments.','The total weight (in pounds) of all handling units assigned to UPS.')" aria-label="Edit UPS Actual Weight">✎ Edit</button></td>
+            </tr>
+            <tr>
+              <td class="col-advanced">
+                <button class="field-name" onclick="openModal('unit_code','Air Transportation Location Unit','Air Stop Location Code','Code identifying air transportation location.','The air stop (location) of the contracted Transportation Handler (THS).')" aria-label="View technical name: unit_code">unit_code</button>
+              </td>
+              <td>Air Transportation Location Unit</td>
+              <td class="ai-col">Air Stop Location Code</td>
+              <td>Code identifying the air transportation handling location.</td>
+              <td class="ai-col-desc">The air stop (location) of the contracted Transportation Handler (<span class="acronym" tabindex="0" data-tooltip="THS: Transportation Handler Service">THS</span>).</td>
+              <td><button class="edit-btn" onclick="openModal('unit_code','Air Transportation Location Unit','Air Stop Location Code','Code identifying air transportation location.','The air stop (location) of the contracted Transportation Handler (THS).')" aria-label="Edit Air Transportation Location Unit">✎ Edit</button></td>
+            </tr>
+            <tr>
+              <td class="col-advanced">
+                <button class="field-name" onclick="openModal('cair_util_pct','Commercial Air Carriers Utilization %','CAIR Network Utilization %','Percentage of network capacity used by commercial air carriers.','Commercial Air (CAIR) network utilization percentage calculated as CAIR actual weight divided by CAIR planned weight.')" aria-label="View technical name: cair_util_pct">cair_util_pct</button>
+              </td>
+              <td>Commercial Air Carriers Utilization %</td>
+              <td class="ai-col"><span class="acronym" tabindex="0" data-tooltip="CAIR: Commercial Air Carrier">CAIR</span> Network Utilization %</td>
+              <td>Percentage of network capacity used by commercial air carriers.</td>
+              <td class="ai-col-desc">Commercial Air (<span class="acronym" tabindex="0" data-tooltip="CAIR: Commercial Air Carrier">CAIR</span>) network utilization: CAIR actual weight ÷ CAIR planned weight, expressed as a percentage.</td>
+              <td><button class="edit-btn" onclick="openModal('cair_util_pct','Commercial Air Carriers Utilization %','CAIR Network Utilization %','Percentage of network capacity used by commercial air carriers.','Commercial Air (CAIR) network utilization: CAIR actual weight ÷ CAIR planned weight, expressed as a percentage.')" aria-label="Edit CAIR Network Utilization">✎ Edit</button></td>
+            </tr>
+            <tr>
+              <td class="col-advanced">
+                <button class="field-name" onclick="openModal('fedex_actual','FedEx Actual Volume','FedEx Actual Shipment Volume','Volume of actual shipments processed through FedEx network.','Federal Express (FedEx) utilization: planned and actual FedEx transportation volumes at the air-stop level.')" aria-label="View technical name: fedex_actual">fedex_actual</button>
+              </td>
+              <td>Federal Express (<span class="acronym" tabindex="0" data-tooltip="FedEx: Federal Express">FedEx</span>) Actual Volume</td>
+              <td class="ai-col"><span class="acronym" tabindex="0" data-tooltip="FedEx: Federal Express">FedEx</span> Actual Shipment Volume</td>
+              <td>Volume of actual shipments processed through <span class="acronym" tabindex="0" data-tooltip="FedEx: Federal Express">FedEx</span> network.</td>
+              <td class="ai-col-desc">Federal Express (<span class="acronym" tabindex="0" data-tooltip="FedEx: Federal Express">FedEx</span>) utilization: planned and actual <span class="acronym" tabindex="0" data-tooltip="FedEx: Federal Express">FedEx</span> transportation volumes at the air-stop level.</td>
+              <td><button class="edit-btn" onclick="openModal('fedex_actual','FedEx Actual Volume','FedEx Actual Shipment Volume','Volume of actual shipments processed through FedEx network.','Federal Express (FedEx) utilization: planned and actual FedEx transportation volumes at the air-stop level.')" aria-label="Edit FedEx Actual Shipment Volume">✎ Edit</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /assetContent -->
+
+  </main>
+
+</div>
+</div><!-- /page-explore -->
+
+
+<!-- ── PAGE 3 — CHANGE SUGGESTIONS ── -->
+<div class="page" id="page-changes">
+
+  <!-- Top bar -->
+  <div class="cs-topbar">
+    <div class="cs-topbar-left">
+      <div class="cs-topbar-title" id="cs-selected-title">No suggestion selected</div>
+      <div class="cs-topbar-sub">Select a suggestion from the left to view and act on it</div>
+    </div>
+    <div class="cs-actions">
+      <button class="cs-action-btn danger" onclick="csDelete()" aria-label="Delete selected suggestion">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        Delete
+      </button>
+      <button class="cs-action-btn" onclick="csSave()" aria-label="Save draft">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Draft
+      </button>
+      <button class="cs-action-btn submit" onclick="csSubmit()" aria-label="Submit for review">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+        Submit for Review
+      </button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="cs-body">
+
+    <!-- Left panel -->
+    <aside class="cs-sidebar" aria-label="Submissions filter and list">
+
+      <div>
+        <label class="cs-sidebar-label" for="cs-status">Filter by Status</label>
+        <p class="cs-sidebar-sub">Select a status to see your suggestions.</p>
+        <select class="cs-status-select" id="cs-status" onchange="filterSuggestions()" aria-label="Filter submissions by status">
+          <option value="">Show all...</option>
+          <option value="draft">Draft — not yet submitted</option>
+          <option value="submitted">Submitted — awaiting approval</option>
+          <option value="approved">Approved — accepted</option>
+          <option value="rejected">Rejected — needs revision</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="cs-sidebar-label">Your Suggestions</div>
+        <div id="cs-list" style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
+          <div class="cs-no-results" id="cs-empty" role="status">
+            <strong>No suggestions found</strong>
+            Select a status filter above to view your submissions.
+          </div>
+          <div id="cs-items" style="display:none;display:flex;flex-direction:column;gap:8px;">
+            <div class="cs-suggestion-item" onclick="selectSuggestion(this,'Last Data Refresh Timestamp','last_refreshed_dtm')" role="option" tabindex="0">
+              <div class="cs-suggestion-name">Last Data Refresh Timestamp</div>
+              <div class="cs-suggestion-meta">Field: last_refreshed_dtm · Draft</div>
+            </div>
+            <div class="cs-suggestion-item" onclick="selectSuggestion(this,'UPS Actual Weight Pounds','ups_actual')" role="option" tabindex="0">
+              <div class="cs-suggestion-name">UPS Actual Weight Pounds</div>
+              <div class="cs-suggestion-meta">Field: ups_actual · Draft</div>
+            </div>
+            <div class="cs-suggestion-item" onclick="selectSuggestion(this,'Air Stop Location Code','unit_code')" role="option" tabindex="0">
+              <div class="cs-suggestion-name">Air Stop Location Code</div>
+              <div class="cs-suggestion-meta">Field: unit_code · Submitted</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="cs-sidebar-footer">
+        <button class="sort-btn" id="sort-toggle" onclick="toggleSort()" aria-pressed="false" aria-label="Toggle alphabetical sort">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>
+          Sort A–Z
+        </button>
+        <button class="cs-refresh-btn" onclick="csRefresh()" aria-label="Reset filters and refresh list">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.75"/></svg>
+          Reset & Refresh
+        </button>
+      </div>
+    </aside>
+
+    <!-- Right main -->
+    <main class="cs-main" id="cs-main-content" aria-label="Suggestion detail">
+      <div class="cs-main-empty">
+        <span class="empty-icon" aria-hidden="true">📝</span>
+        <h3>No suggestion selected</h3>
+        <p>Use the filter on the left to find your submissions, then click one to view its details here.</p>
+      </div>
+    </main>
+
+  </div>
+</div><!-- /page-changes -->
+
+
+<!-- ── MODAL ── -->
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <div class="modal-header-text">
+        <h2 id="modal-title">Edit Field</h2>
+        <p id="modal-field-code"></p>
+      </div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close dialog">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Functional name section -->
+      <div class="modal-section">
+        <div class="modal-section-title">Label (Business Name)</div>
+        <div class="comparison-row">
+          <div class="comparison-col">
+            <div class="col-label">Current Label</div>
+            <div class="col-value" id="currentName"></div>
+          </div>
+          <div class="comparison-col suggested">
+            <div class="ai-suggested-label">
+              <span class="col-label" style="margin:0">AI Suggested</span>
+              <span class="ai-chip">AI</span>
+            </div>
+            <div class="col-value" id="suggestedName"></div>
+          </div>
+        </div>
+        <div class="edit-section">
+          <label for="functionalInput">Your version of the label</label>
+          <textarea id="functionalInput" maxlength="500" aria-describedby="functionalCount"></textarea>
+          <div class="char-count"><span id="functionalCount">0</span> / 500 characters</div>
+        </div>
+      </div>
+
+      <!-- Description section -->
+      <div class="modal-section">
+        <div class="modal-section-title">Description</div>
+        <div class="comparison-row">
+          <div class="comparison-col">
+            <div class="col-label">Current Description</div>
+            <div class="col-value" id="currentDesc"></div>
+          </div>
+          <div class="comparison-col suggested">
+            <div class="ai-suggested-label">
+              <span class="col-label" style="margin:0">AI Suggested</span>
+              <span class="ai-chip">AI</span>
+            </div>
+            <div class="col-value" id="suggestedDesc"></div>
+          </div>
+        </div>
+        <div class="edit-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <label for="descriptionInput" style="margin:0">Your version of the description</label>
+            <button class="modal-btn" style="padding:5px 12px;font-size:12px;" onclick="resetDescription()">↺ Reset to AI suggestion</button>
+          </div>
+          <textarea id="descriptionInput" maxlength="1000" aria-describedby="descriptionCount"></textarea>
+          <div class="char-count"><span id="descriptionCount">0</span> / 1,000 characters</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer — danger action left, save/submit right -->
+    <div class="modal-footer">
+      <div class="modal-footer-left">
+        <button class="modal-btn danger" onclick="discardSuggestion()" aria-label="Discard all changes to this field">Discard Changes</button>
+      </div>
+      <div class="modal-footer-right">
+        <button class="modal-btn" onclick="closeModal()">Cancel</button>
+        <button class="modal-btn primary" onclick="saveSuggestion()">Save Draft</button>
+        <button class="modal-btn success" onclick="submitSuggestion()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ── PAGE SWITCHING ── */
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  ['welcome','explore','changes'].forEach(t => {
+    const tab = document.getElementById('tab-' + t);
+    tab.classList.toggle('active', t === page);
+    tab.setAttribute('aria-current', t === page ? 'page' : 'false');
+  });
+}
+
+/* ── BEGINNER MODE — now driven by visual toggle button ── */
+function toggleBeginnerMode(btn) {
+  const isOn = btn.classList.contains('on');
+  btn.classList.toggle('on', !isOn);
+  btn.setAttribute('aria-checked', String(!isOn));
+  document.body.classList.toggle('beginner-mode', !isOn);
+}
+
+/* ── STATUS FILTER PILLS ── */
+let activeStatusFilter = 'all';
+function setStatusPill(status) {
+  activeStatusFilter = status;
+  ['all','partial','full'].forEach(s => {
+    const pill = document.getElementById('pill-' + s);
+    pill.classList.toggle('active', s === status);
+    pill.setAttribute('aria-pressed', s === status ? 'true' : 'false');
+  });
+  filterAssets();
+}
+
+/* ── ASSET SELECTION ── */
+function selectAsset(btn, name, domain, category, status, url) {
+  document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('selected'));
+  if (btn) btn.classList.add('selected');
+  document.getElementById('assetNameBanner').textContent = name;
+  document.getElementById('assetName').textContent = name;
+  document.getElementById('domainInfo').textContent = domain;
+  document.getElementById('categoryInfo').textContent = category;
+  document.getElementById('urlInfo').textContent = url;
+  document.getElementById('assetInfoPanel').classList.add('show');
+  setExploreEmptyState(false);
+}
+
+function closeAssetInfo() {
+  document.getElementById('assetInfoPanel').classList.remove('show');
+}
+
+function setExploreEmptyState(isEmpty) {
+  const guidance = document.getElementById('noAssetGuidance');
+  const content  = document.getElementById('assetContent');
+  if (!guidance || !content) return;
+  guidance.style.display  = isEmpty ? 'block' : 'none';
+  content.style.display   = isEmpty ? 'none'  : 'flex';
+}
+
+/* ── SEARCH + FILTER ── */
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const rows = document.querySelectorAll('#tableBody tr');
+  let visible = 0;
+  rows.forEach(row => {
+    const text = Array.from(row.cells).map(c => c.textContent.toLowerCase()).join(' ');
+    const match = text.includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  document.getElementById('assetsCount').textContent = visible;
+  document.getElementById('attributesCount').textContent = visible * 3;
+  document.getElementById('attributesBannerCount').textContent = visible * 3;
+  updateClearButton();
+  filterAssets();
+}
+
+function updateClearButton() {
+  document.getElementById('clearSearchBtn').classList.toggle(
+    'show', document.getElementById('searchInput').value.length > 0
+  );
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  filterTable();
+}
+
+function filterAssets() {
+  const domainFilter = document.getElementById('domainFilter').value;
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const items = document.querySelectorAll('#assetsList .assets-li');
+  let visible = 0;
+
+  items.forEach(li => {
+    const domain = li.dataset.domain || '';
+    const status = li.dataset.status || '';
+    const text   = li.querySelector('.asset-btn-name').textContent.toLowerCase();
+
+    let show = true;
+    if (q && !text.includes(q)) show = false;
+    if (domainFilter && domain !== domainFilter) show = false;
+    if (activeStatusFilter === 'partial' && status !== 'partial') show = false;
+    if (activeStatusFilter === 'full'    && status !== 'full')    show = false;
+
+    li.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  document.getElementById('assetsCount').textContent  = visible;
+  document.getElementById('attributesCount').textContent = visible * 3;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setExploreEmptyState(true);
+  // Beginner mode ON by default
+  document.body.classList.add('beginner-mode');
+  filterAssets();
+});
+
+
+/* ── CHANGE SUGGESTIONS ── */
+let sortOn = false;
+
+function filterSuggestions() {
+  const status = document.getElementById('cs-status').value;
+  document.getElementById('cs-empty').style.display  = status ? 'none' : 'block';
+  document.getElementById('cs-items').style.display  = status ? 'flex' : 'none';
+}
+
+function selectSuggestion(el, title, code) {
+  document.querySelectorAll('.cs-suggestion-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('cs-selected-title').textContent = title;
+  document.getElementById('cs-main-content').innerHTML = `
+    <div style="max-width:640px;width:100%;text-align:left;">
+      <h3 style="font-size:17px;font-weight:700;margin-bottom:18px;color:var(--gray-900);">${title}</h3>
+      <div style="background:var(--gray-100);border-radius:8px;padding:16px;margin-bottom:14px;border:1px solid var(--gray-200);">
+        <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Technical Field Name</div>
+        <div style="font-size:14px;color:var(--gray-700);font-family:monospace;">${code}</div>
+      </div>
+      <div style="background:var(--blue-light);border-radius:8px;padding:16px;border:1px solid #b8d4f0;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:.6px;">Your Suggested Description</span>
+          <span style="background:#fdb913;color:#1a1000;font-size:10px;font-weight:800;padding:1px 7px;border-radius:20px;">AI</span>
+        </div>
+        <div style="font-size:14px;color:var(--gray-900);line-height:1.6;">AI-generated description for this field is pending your review and approval.</div>
+      </div>
+    </div>`;
+}
+
+function toggleSort() {
+  sortOn = !sortOn;
+  const btn = document.getElementById('sort-toggle');
+  btn.classList.toggle('active', sortOn);
+  btn.setAttribute('aria-pressed', String(sortOn));
+}
+
+function csDelete()  { if (confirm('Delete this suggestion? This cannot be undone.')) alert('Suggestion deleted.'); }
+function csSave()    { alert('Draft saved! You can come back to finish it anytime.'); }
+function csSubmit()  { alert('Submitted for review! A data steward will approve your changes.'); }
+function csRefresh() {
+  document.getElementById('cs-status').value = '';
+  filterSuggestions();
+  document.getElementById('cs-selected-title').textContent = 'No suggestion selected';
+  document.getElementById('cs-main-content').innerHTML = `
+    <div class="cs-main-empty">
+      <span class="empty-icon" aria-hidden="true">📝</span>
+      <h3>No suggestion selected</h3>
+      <p>Use the filter on the left to find your submissions, then click one to view its details here.</p>
+    </div>`;
+  document.querySelectorAll('.cs-suggestion-item').forEach(i => i.classList.remove('active'));
+}
+
+
+/* ── MODAL ── */
+let originalDescription = '';
+
+function openModal(code, currentName, suggestedName, desc, suggestedDesc) {
+  document.getElementById('modal-title').textContent     = 'Edit: ' + currentName;
+  document.getElementById('modal-field-code').textContent = 'Technical code: ' + code;
+  document.getElementById('currentName').textContent     = currentName;
+  document.getElementById('suggestedName').textContent   = suggestedName;
+  document.getElementById('currentDesc').textContent     = desc;
+  document.getElementById('suggestedDesc').textContent   = suggestedDesc;
+  document.getElementById('functionalInput').value       = suggestedName;
+  document.getElementById('descriptionInput').value      = suggestedDesc;
+  originalDescription = suggestedDesc;
+  document.getElementById('functionalCount').textContent  = suggestedName.length;
+  document.getElementById('descriptionCount').textContent = suggestedDesc.length;
+  document.getElementById('modal').classList.add('active');
+  // Focus the close button on open
+  setTimeout(() => document.querySelector('.modal-close').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+function resetDescription() {
+  document.getElementById('descriptionInput').value = originalDescription;
+  document.getElementById('descriptionCount').textContent = originalDescription.length;
+}
+
+function saveSuggestion()    { alert('Draft saved! Your edits are stored and can be submitted later.'); closeModal(); }
+function discardSuggestion() { if (confirm('Discard your changes to this field?')) { alert('Changes discarded.'); closeModal(); } }
+function submitSuggestion()  { alert('Submitted! A data steward will review your changes.'); closeModal(); }
+
+document.getElementById('functionalInput').addEventListener('input', function() {
+  document.getElementById('functionalCount').textContent = this.value.length;
+});
+document.getElementById('descriptionInput').addEventListener('input', function() {
+  document.getElementById('descriptionCount').textContent = this.value.length;
+});
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
