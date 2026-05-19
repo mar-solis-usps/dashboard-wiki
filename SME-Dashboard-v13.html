@@ -210,6 +210,41 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Sego
 }
 .hide-btn:hover { border-color: #0066cc; color: #0066cc; }
 
+/* Custom curation status dropdown */
+.custom-select {
+  position: relative; width: 100%; user-select: none;
+}
+.custom-select-trigger {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border: 1px solid #d0d0d0; border-radius: 4px;
+  background: white; font-size: 12.5px; font-family: inherit;
+  cursor: pointer; transition: border-color 0.15s;
+}
+.custom-select-trigger:hover { border-color: #0066cc; }
+.custom-select.open .custom-select-trigger {
+  border-color: #0066cc; box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+  border-radius: 4px 4px 0 0;
+}
+.custom-select-arrow { font-size: 11px; color: #666; transition: transform 0.15s; }
+.custom-select.open .custom-select-arrow { transform: rotate(180deg); }
+.custom-select-options {
+  display: none; position: absolute; top: 100%; left: 0; right: 0;
+  background: white; border: 1px solid #0066cc; border-top: none;
+  border-radius: 0 0 4px 4px; z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12); overflow: hidden;
+}
+.custom-select.open .custom-select-options { display: block; }
+.custom-select-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; font-size: 12.5px; font-family: inherit;
+  cursor: pointer; color: #1a1a1a; transition: background 0.1s;
+}
+.custom-select-option:hover { background: #f0f7ff; }
+.custom-select-option.selected { background: #e4f0ff; font-weight: 600; }
+.custom-select-option:first-child { color: #888; font-style: italic; }
+.dot-full    { color: #28a745; }   /* green  — Fully Curated    */
+.dot-partial { color: #ffc107; }   /* yellow — Partially Curated */
+
 /* Main data content */
 .data-main { display: flex; flex-direction: column; gap: 16px; }
 .asset-name-banner { background: white; padding: 14px 16px; border-radius: 4px; border-bottom: 2px solid #e0e0e0; }
@@ -236,19 +271,125 @@ thead th:last-child { border-right: none; }
 tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.1s; cursor: pointer; }
 tbody tr:hover { background: #f5faff; }
 tbody td { padding: 10px 12px; vertical-align: top; }
-.field-name {
-  background: none; border: none; color: #0066cc; cursor: pointer;
-  font-weight: 600; font-size: 11.5px; font-family: 'Courier New', monospace; padding: 0; text-align: left;
+.field-name-code {
+  font-family: 'Courier New', monospace; font-size: 11.5px;
+  font-weight: 700; color: #1a1a1a; display: block; margin-bottom: 4px;
 }
-.field-name:hover { text-decoration: underline; }
-.ai-col     { background: #eef6ff; font-weight: 600; }
-.ai-col-desc{ background: #eef6ff; font-weight: 600; }
-.edit-btn {
-  background: white; border: 1px solid #d0d0d0; padding: 5px 10px;
-  border-radius: 3px; cursor: pointer; font-size: 11.5px;
-  font-family: inherit; transition: all 0.15s; font-weight: 500;
+.field-status-tag { font-size: 10px; font-style: italic; color: #c0392b; font-weight: 600; }
+.std-name-text { font-size: 12px; color: #1a1a1a; display: block; margin-bottom: 4px; }
+.no-ai-text    { font-size: 10.5px; font-style: italic; color: #aaa; }
+
+.inline-textarea {
+  width: 100%; min-height: 72px; padding: 8px 10px;
+  border: 1.5px solid #4a86c8; border-radius: 4px;
+  font-family: inherit; font-size: 12px; color: #0055a5;
+  background: #eef5ff; resize: vertical; line-height: 1.45; box-sizing: border-box;
 }
-.edit-btn:hover { background: #0066cc; border-color: #0066cc; color: white; }
+.inline-textarea:focus { outline: none; border-color: #0066cc; background: #e4f0ff; box-shadow: 0 0 0 3px rgba(0,102,204,0.1); }
+
+.cell-actions { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-left: 5px; flex-shrink: 0; }
+.cell-icon-btn {
+  background: white; border: 1px solid #c0cfe0; border-radius: 4px;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px; color: #0066cc; transition: all 0.15s;
+}
+.cell-icon-btn:hover { background: #0066cc; color: white; border-color: #0066cc; }
+.cell-reset-btn {
+  background: none; border: none; font-size: 10.5px; font-weight: 600;
+  color: #666; cursor: pointer; font-family: inherit; padding: 0; white-space: nowrap;
+}
+.cell-reset-btn:hover { color: #0066cc; text-decoration: underline; }
+.editable-col-wrap { display: flex; align-items: flex-start; }
+
+.remove-bg-btn {
+  background: white; border: 1px solid #c0c0c0; border-radius: 4px;
+  font-size: 11px; padding: 4px 10px; cursor: pointer; color: #444;
+  font-family: inherit; font-weight: 500; transition: all 0.15s;
+}
+.remove-bg-btn:hover, .remove-bg-btn.active { border-color: #0066cc; color: #0066cc; background: #eef5ff; }
+
+/* Table toolbar */
+.table-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: white; border: 1px solid #e0e0e0; border-bottom: none;
+  border-radius: 4px 4px 0 0; padding: 9px 14px;
+}
+.table-toolbar-left { display: flex; align-items: center; gap: 12px; }
+.table-toolbar-right { display: flex; align-items: center; gap: 8px; }
+
+/* Toggle switch for Remove Background */
+.remove-bg-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 12px; color: #555; font-weight: 500; }
+.remove-bg-toggle input { display: none; }
+.toggle-track {
+  width: 32px; height: 18px; background: #ccc; border-radius: 9px;
+  position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-track::after {
+  content: ''; width: 14px; height: 14px; background: white; border-radius: 50%;
+  position: absolute; top: 2px; left: 2px; transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.remove-bg-toggle input:checked + .toggle-track { background: #0066cc; }
+.remove-bg-toggle input:checked + .toggle-track::after { left: 16px; }
+
+/* Toolbar search box */
+.tbl-search-wrap {
+  display: flex; align-items: center; gap: 0;
+  border: 1.5px solid #c0cfe0; border-radius: 4px; overflow: hidden;
+  background: white;
+}
+.tbl-search-label {
+  padding: 0 10px; font-size: 12px; font-weight: 600; color: #1a1a1a;
+  white-space: nowrap; border-right: 1.5px solid #c0cfe0; height: 100%;
+  display: flex; align-items: center; background: #f5f7fa;
+}
+.tbl-search-input {
+  border: none; outline: none; padding: 5px 10px;
+  font-size: 12px; font-family: inherit; color: #333; width: 140px;
+  background: white;
+}
+.tbl-search-input::placeholder { color: #aaa; font-style: italic; }
+.tbl-search-nav {
+  background: #f0f4f8; border: none; border-left: 1.5px solid #c0cfe0;
+  padding: 5px 8px; cursor: pointer; font-size: 10px; color: #0066cc;
+  transition: background 0.15s; line-height: 1;
+}
+.tbl-search-nav:hover { background: #0066cc; color: white; }
+
+/* Search highlight */
+mark.search-highlight { background: #fff176; border-radius: 2px; color: inherit; padding: 0 1px; }
+mark.search-highlight.current { background: #fdb913; outline: 2px solid #e6a800; }
+
+/* Textarea search match */
+.ta-search-match { border-color: #ffc107 !important; box-shadow: 0 0 0 3px rgba(255,193,7,0.3) !important; }
+.ta-current      { border-color: #fdb913 !important; box-shadow: 0 0 0 3px rgba(253,185,19,0.5) !important; }
+
+/* Textarea match marker */
+.ta-match-overlay {
+  display: none; /* hidden — just used as scroll anchor & match tracker */
+}
+
+/* Search counter */
+.tbl-search-count {
+  font-size: 10.5px; color: #888; white-space: nowrap;
+  padding: 0 6px; border-right: 1.5px solid #c0cfe0; min-width: 40px; text-align: center;
+}
+.tbl-btn {
+  padding: 6px 16px; font-size: 12px; font-weight: 600; border-radius: 4px;
+  cursor: pointer; font-family: inherit; transition: all 0.15s; border: 1.5px solid;
+}
+.tbl-btn-discard { background: white; color: #c0392b; border-color: #e0b0b0; }
+.tbl-btn-discard:hover { background: #fdf0f0; border-color: #c0392b; }
+.tbl-btn-save    { background: white; color: #444; border-color: #d0d0d0; }
+.tbl-btn-save:hover { background: #f5f5f5; border-color: #999; }
+.tbl-btn-submit  { background: #0066cc; color: white; border-color: #0066cc; }
+.tbl-btn-submit:hover { background: #0052a3; border-color: #0052a3; }
+
+/* Attach table-container flush to toolbar */
+.table-container { border-radius: 0 0 4px 4px; }
+
+tbody td { padding: 12px 10px; vertical-align: top; }
+tbody td.td-edit, tbody td.td-sugg { padding: 10px 6px; }
 
 /* ══════════════════════════════════════
    PAGE 3 — CHANGE SUGGESTIONS
@@ -429,7 +570,7 @@ textarea:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 3px rgb
 <header class="app-header">
   <div class="hdr-brand">
     <div class="hdr-logo">
-      <img src="../../Survey Pop Up/Survey Pop Up/images/CDAO_logo_white.svg" alt="CDAO Logo">
+      <svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 83.08 56.1"><defs><style>.cls-1,.cls-2{fill:#fff;}.cls-2{fill-rule:evenodd;}</style></defs><g id="Layer_1-2" data-name="Layer 1"><g><g><path class="cls-1" d="M27.64,33.83c-.43,0-.83-.1-1.18-.32-.35-.21-.64-.49-.85-.85-.21-.35-.32-.75-.32-1.18v-8.28c0-.43.1-.82.32-1.18.21-.35.49-.64.85-.85s.75-.32,1.18-.32h10.58v1.94h-10.31c-.19,0-.35.06-.48.19s-.19.29-.19.48v7.74c0,.19.06.35.19.48s.28.19.48.19h10.31v1.94h-10.58Z"/><path class="cls-1" d="M40.13,33.83v-12.96h10.6c.43,0,.83.11,1.19.32s.65.49.85.85c.21.35.31.75.31,1.18v8.28c0,.43-.1.83-.31,1.18-.21.35-.5.64-.85.85-.36.21-.76.32-1.19.32h-10.6ZM42.51,31.89h8.19c.12,0,.22-.04.31-.13s.13-.19.13-.31v-8.17c0-.12-.04-.23-.13-.32s-.19-.13-.31-.13h-8.19c-.12,0-.22.04-.31.13s-.13.2-.13.32v8.17c0,.12.04.22.13.31s.19.13.31.13Z"/><path class="cls-1" d="M55.14,23.21c0-.43.1-.82.31-1.18.21-.35.49-.64.85-.85.35-.21.75-.32,1.18-.32h8.26c.43,0,.83.11,1.19.32s.65.49.85.85c.21.35.31.75.31,1.18v10.62h-1.96v-4.54h-9.05v4.54h-1.94v-10.62ZM66.14,27.35v-4.09c0-.12-.04-.23-.13-.32s-.19-.13-.31-.13h-8.17c-.12,0-.23.04-.31.13s-.14.2-.14.32v4.09h9.05Z"/><path class="cls-1" d="M72.46,33.83c-.43,0-.83-.1-1.18-.32-.35-.21-.64-.49-.85-.85-.21-.35-.31-.75-.31-1.18v-8.28c0-.43.1-.82.31-1.18.21-.35.49-.64.85-.85s.75-.32,1.18-.32h8.28c.43,0,.83.11,1.18.32s.64.49.85.85c.21.35.31.75.31,1.18v8.28c0,.43-.11.83-.31,1.18-.21.35-.49.64-.85.85-.35.21-.75.32-1.18.32h-8.28ZM72.51,31.89h8.17c.12,0,.22-.04.31-.13.08-.09.13-.19.13-.31v-8.17c0-.12-.04-.23-.13-.32-.08-.09-.19-.13-.31-.13h-8.17c-.12,0-.23.04-.32.13-.09.09-.13.2-.13.32v8.17c0,.12.04.22.13.31.09.09.2.13.32.13Z"/></g><g><path class="cls-2" d="M27.5,41.98l2.54,1.06c.45.19.93.11,1.31-.2.27-.23.6-.4.97-.49,1.29-.31,2.6.48,2.91,1.78.31,1.29-.48,2.6-1.77,2.91-.24.06-.48.08-.72.06-.49-.03-.92.2-1.17.61l-.92,1.52c-.28.46-.25,1.01.08,1.43.28.36.48.78.6,1.25.44,1.81-.67,3.64-2.48,4.08-1.81.44-3.64-.67-4.08-2.48-.44-1.81.67-3.64,2.48-4.08.46-.11.92-.12,1.36-.05.53.09,1.03-.14,1.3-.6l.92-1.52c.25-.42.25-.9,0-1.32-.13-.21-.22-.44-.28-.69-.03-.12-.05-.24-.06-.37-.04-.49-.33-.88-.78-1.07l-2.54-1.06c-.41-.17-.84-.13-1.21.12-.18.13-.39.22-.61.27-1,.24-2.01-.37-2.25-1.37-.24-1,.37-2.01,1.37-2.25,1-.24,2.01.37,2.25,1.37,0,.04.02.07.02.11.08.44.35.78.76.95Z"/><path class="cls-2" d="M32.62,7.5c.68-.16,1.36.26,1.52.94s-.26,1.36-.94,1.52c-.68.16-1.36-.26-1.52-.94-.16-.68.26-1.36.94-1.52"/><path class="cls-2" d="M20.85,4.23c.39-.09.78.15.87.54.09.39-.15.78-.54.87-.39.09-.78-.15-.87-.54-.09-.39.15-.78.54-.87Z"/><path class="cls-2" d="M36.51,2.94c.34.21.44.66.23,1-.21.34-.66.44-1,.23-.34-.21-.44-.66-.23-1,.21-.34.66-.45,1-.23Z"/><path class="cls-2" d="M36.73,40.45c-.54.87-1.69,1.14-2.56.6-.87-.54-1.15-1.69-.6-2.56.54-.87,1.69-1.14,2.56-.6.87.54,1.15,1.69.6,2.56Z"/><path class="cls-2" d="M39.15,45.73c-.37.59-1.15.78-1.74.41-.59-.37-.78-1.15-.41-1.74.37-.59,1.15-.78,1.74-.41.59.37.78,1.15.41,1.74Z"/><path class="cls-1" d="M24.26,46.92c.16.68-.25,1.37-.93,1.52s-1.37-.25-1.52-.93.25-1.37.93-1.52,1.37.25,1.52.93Z"/><path class="cls-2" d="M35.09,51.7c-.39.09-.78-.15-.87-.54-.09-.39.15-.78.54-.87.39-.09.78.15.87.54.09.39-.15.78-.54.87Z"/><path class="cls-1" d="M11.54,37c.59.37.78,1.15.4,1.74s-1.15.78-1.74.4c-.59-.34-.78-1.15-.4-1.74s1.15-.78,1.74-.4Z"/><path class="cls-2" d="M16.22,49.79c-.34-.21-.44-.66-.23-1,.21-.34.66-.44,1-.23.34.21.44.66.23,1-.21.34-.66.44-1,.23Z"/><path class="cls-2" d="M7.5,23.31c-.16-.68.26-1.36.94-1.52.68-.16,1.36.26,1.52.94.16.68-.26,1.36-.94,1.52-.68.16-1.36-.26-1.52-.94Z"/><path class="cls-2" d="M4.23,35.09c-.09-.39.15-.78.54-.87.39-.09.78.15.87.54.09.39-.15.78-.54.87-.39.09-.78-.15-.87-.54Z"/><path class="cls-2" d="M16.78,10.2c.37-.59,1.15-.78,1.74-.41.59.37.78,1.15.41,1.74-.37.59-1.15.78-1.74.41-.59-.37-.78-1.15-.41-1.74Z"/><path class="cls-2" d="M6.15,16.22c.21-.34.66-.44,1-.23.34.21.44.66.23,1-.21.34-.66.45-1,.23-.34-.21-.44-.66-.23-1Z"/><path class="cls-2" d="M17.85,37.43l1.03,2.55c.18.45.57.74,1.06.79.36.03.71.15,1.03.35,1.13.7,1.48,2.19.78,3.32-.7,1.13-2.19,1.48-3.32.78-.21-.13-.4-.29-.55-.47-.32-.37-.78-.52-1.26-.4l-1.73.41c-.52.12-.89.53-.96,1.06-.06.45-.22.9-.47,1.31-.98,1.58-3.06,2.07-4.65,1.09-1.59-.98-2.07-3.06-1.09-4.65.98-1.58,3.06-2.07,4.65-1.09.4.25.74.57.99.94.31.44.82.63,1.34.51l1.73-.41c.47-.11.82-.46.94-.93.06-.24.16-.47.29-.68.07-.11.14-.21.22-.3.32-.37.4-.85.21-1.3l-1.03-2.55c-.17-.41-.5-.69-.94-.78-.22-.04-.43-.12-.63-.25-.87-.54-1.15-1.69-.6-2.56.54-.87,1.69-1.14,2.56-.6.87.54,1.14,1.69.6,2.56-.02.03-.04.06-.06.09-.26.36-.31.8-.14,1.21Z"/><path class="cls-2" d="M14.12,27.5l-1.08,2.53c-.19.45-.12.93.19,1.31.23.28.4.61.48.98.31,1.3-.5,2.59-1.79,2.9-1.3.3-2.59-.5-2.9-1.8-.06-.24-.08-.49-.06-.72.03-.49-.19-.92-.6-1.17l-1.52-.93c-.45-.28-1.01-.25-1.43.07-.36.27-.79.48-1.26.59-1.81.43-3.63-.7-4.06-2.51-.43-1.82.7-3.63,2.51-4.06,1.81-.43,3.63.7,4.06,2.51.11.46.12.92.04,1.36-.09.52.13,1.03.59,1.31l1.52.93c.41.26.9.26,1.32,0,.21-.12.44-.22.69-.28.12-.03.24-.05.37-.06.48-.04.88-.32,1.07-.77l1.08-2.53c.17-.41.13-.84-.12-1.21-.12-.18-.22-.39-.27-.62-.24-1,.39-2,1.39-2.24,1-.24,2,.39,2.24,1.39.24,1-.38,2-1.39,2.24-.04,0-.07.02-.11.02-.44.08-.78.35-.95.75Z"/><path class="cls-2" d="M18.5,17.85l-2.55,1.03c-.45.18-.74.57-.79,1.06-.04.36-.15.71-.35,1.03-.7,1.13-2.19,1.48-3.32.78-1.13-.7-1.48-2.19-.78-3.32.13-.21.29-.4.47-.55.37-.32.52-.78.4-1.26l-.41-1.73c-.12-.52-.53-.89-1.06-.96-.45-.06-.89-.22-1.31-.47-1.59-.98-2.07-3.06-1.09-4.65.98-1.59,3.06-2.08,4.65-1.09,1.59.98,2.07,3.06,1.09,4.65-.25.4-.57.74-.94.99-.44.31-.63.82-.51,1.34l.41,1.73c.11.47.46.82.93.94.24.06.47.15.68.29.11.07.21.14.3.22.37.32.85.39,1.3.21l2.55-1.03c.41-.17.69-.5.77-.94.04-.22.12-.43.25-.63.54-.88,1.69-1.15,2.56-.6.88.54,1.15,1.69.6,2.56-.54.88-1.69,1.14-2.56.6-.03-.02-.06-.04-.09-.06-.36-.26-.8-.31-1.21-.14Z"/><path class="cls-2" d="M30.6,12.94c1-.24,2,.38,2.24,1.39.24,1-.39,2-1.39,2.24-1,.24-2-.39-2.24-1.39,0-.04-.02-.07-.02-.11-.08-.44-.35-.78-.76-.95l-2.53-1.08c-.45-.19-.93-.12-1.31.19-.28.23-.61.4-.98.48-1.3.3-2.59-.5-2.9-1.8-.31-1.3.5-2.59,1.79-2.9.24-.06.49-.07.72-.06.49.03.92-.19,1.17-.6l.93-1.52c.28-.46.25-1.01-.07-1.43-.27-.36-.48-.79-.59-1.26-.43-1.81.7-3.63,2.51-4.06,1.81-.43,3.63.7,4.06,2.51.43,1.81-.7,3.63-2.51,4.06-.46.11-.92.12-1.36.04-.53-.09-1.03.13-1.31.59l-.93,1.52c-.25.42-.26.9,0,1.32.12.21.22.44.28.69.03.12.05.24.06.37.04.49.32.88.77,1.07l2.53,1.08c.41.17.84.13,1.21-.12.18-.12.39-.22.62-.27Z"/><path class="cls-2" d="M27.65,41.84l2.54,1.06c.45.19.93.11,1.31-.2.27-.23.6-.4.97-.49,1.29-.31,2.6.48,2.91,1.78.31,1.29-.48,2.6-1.77,2.91-.24.06-.48.08-.72.06-.49-.03-.92.2-1.17.61l-.92,1.52c-.28.46-.25,1.01.08,1.43.28.36.48.78.6,1.25.44,1.81-.67,3.64-2.48,4.08-1.81.44-3.64-.67-4.08-2.48-.44-1.81.67-3.64,2.48-4.08.46-.11.92-.12,1.36-.05.53.09,1.03-.14,1.3-.6l.92-1.52c.25-.42.25-.9,0-1.32-.13-.21-.22-.44-.28-.69-.03-.12-.05-.24-.06-.37-.04-.49-.33-.88-.78-1.07l-2.54-1.06c-.41-.17-.84-.13-1.21.12-.18.13-.39.22-.61.27-1,.24-2.01-.37-2.25-1.37-.24-1,.37-2.01,1.37-2.25,1-.24,2.01.37,2.25,1.37,0,.04.02.07.02.11.08.44.35.78.76.95Z"/><path class="cls-2" d="M39.89,14.01c-.74,1.19-2.29,1.55-3.48.82-1.19-.73-1.55-2.29-.82-3.48.73-1.19,2.29-1.55,3.48-.82,1.19.74,1.55,2.29.82,3.48Z"/></g></g></g></svg>
     </div>
     <div>
       <div class="hdr-title">Postal Data Wiki</div>
@@ -517,11 +658,25 @@ textarea:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 3px rgb
         <h2>⚙️ Filters</h2>
         <div class="filter-group">
           <label class="filter-label">Curation Status</label>
-          <select class="filter-select" id="curationFilter" onchange="filterAssets()">
-            <option>Select...</option>
-            <option>● Fully Curated</option>
-            <option>◐ Partially Curated</option>
-          </select>
+          <!-- hidden input stores the value for filterAssets() to read -->
+          <input type="hidden" id="curationFilter" value="Select...">
+          <div class="custom-select" id="curationDropdown">
+            <div class="custom-select-trigger" onclick="toggleCurationDropdown()">
+              <span id="curationLabel">Select...</span>
+              <span class="custom-select-arrow">▾</span>
+            </div>
+            <div class="custom-select-options" id="curationOptions">
+              <div class="custom-select-option" onclick="setCuration('Select...','Select...')">
+                Select...
+              </div>
+              <div class="custom-select-option" onclick="setCuration('● Fully Curated','fully')">
+                <span class="dot-full" style="font-size:14px;line-height:1;">●</span> Fully Curated
+              </div>
+              <div class="custom-select-option" onclick="setCuration('◐ Partially Curated','partial')">
+                <span class="dot-partial" style="font-size:14px;line-height:1;">◐</span> Partially Curated
+              </div>
+            </div>
+          </div>
         </div>
         <div class="filter-group">
           <label class="filter-label">Data Domain</label>
@@ -569,12 +724,12 @@ textarea:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 3px rgb
           </div>
         </div>
         <ul class="assets-ul">
-          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Air Transportation Utilization','Logistics','Data Assets','◐','air-001')">Air Transportation Utilization ◐</button></li>
-          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Customer Package Pickup','Logistics','Data Assets','●','cust-002')">Customer Package Pickup ●</button></li>
-          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Customer Registration User Identification','Transportation','Data Assets','●','cust-003')">Customer Registration User Identification ●</button></li>
-          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue and Volume by Business Partner and Owner','Logistics','Data Assets','◐','daily-004')">Daily Commercial Revenue and Volume by Business Partner and Owner ◐</button></li>
-          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue and Volume by Sales Account-Based Information','Logistics','Data Assets','●','daily-005')">Daily Commercial Revenue and Volume by Sales Account-Based Information ●</button></li>
-          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Expedited Packaging Supplies Items','Operations','Data Assets','●','exp-006')">Expedited Packaging Supplies Items ●</button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Air Transportation Utilization','Logistics','Data Assets','◐','air-001')">Air Transportation Utilization <span class="dot-partial">◐</span></button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Customer Package Pickup','Logistics','Data Assets','●','cust-002')">Customer Package Pickup <span class="dot-full">●</span></button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Customer Registration User Identification','Transportation','Data Assets','●','cust-003')">Customer Registration User Identification <span class="dot-full">●</span></button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue and Volume by Business Partner and Owner','Logistics','Data Assets','◐','daily-004')">Daily Commercial Revenue and Volume by Business Partner and Owner <span class="dot-partial">◐</span></button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue and Volume by Sales Account-Based Information','Logistics','Data Assets','●','daily-005')">Daily Commercial Revenue and Volume by Sales Account-Based Information <span class="dot-full">●</span></button></li>
+          <li class="assets-li"><button class="asset-btn" onclick="selectAsset(this,'Expedited Packaging Supplies Items','Operations','Data Assets','●','exp-006')">Expedited Packaging Supplies Items <span class="dot-full">●</span></button></li>
         </ul>
 
         <div class="asset-info-panel" id="assetInfoPanel">
@@ -624,58 +779,184 @@ textarea:focus { outline: none; border-color: #0066cc; box-shadow: 0 0 0 3px rgb
         <span class="banner-value" style="color:#07a41e">5</span>
       </div>
     </div>
+    <div class="table-toolbar">
+      <div class="table-toolbar-left">
+        <label class="remove-bg-toggle">
+          <input type="checkbox" id="removeBgCheck" onchange="toggleRemoveBg()">
+          <span class="toggle-track"></span>
+          <span class="toggle-label">Remove Background</span>
+        </label>
+      </div>
+      <div class="table-toolbar-right">
+        <div class="tbl-search-wrap">
+          <span class="tbl-search-label">Search</span>
+          <input type="text" class="tbl-search-input" id="tableSearchInput" placeholder="Find..." oninput="filterTableBySearch(this.value)">
+          <span class="tbl-search-count" id="searchCounter"></span>
+          <button class="tbl-search-nav" onclick="navigateSearch(-1)" title="Previous">▲</button>
+          <button class="tbl-search-nav" onclick="navigateSearch(1)"  title="Next">▼</button>
+        </div>
+        <button class="tbl-btn tbl-btn-discard" onclick="if(confirm('Discard all changes?')) location.reload()">✕ Discard</button>
+        <button class="tbl-btn tbl-btn-save"    onclick="alert('✓ Changes saved!')">💾 Save</button>
+        <button class="tbl-btn tbl-btn-submit"  onclick="alert('✓ Submitted for review!')">✓ Submit</button>
+      </div>
+    </div>
     <div class="table-container">
       <table>
         <thead>
           <tr>
-            <th style="width:14%">Field Name</th>
-            <th style="width:18%">Standardized Name</th>
-            <th style="width:18%">Suggested Functional Name 🤖</th>
-            <th style="width:15%">Description</th>
-            <th style="width:20%">Suggested Description 🤖</th>
-            <th style="width:15%">Actions</th>
+            <th style="width:10%">Field Name</th>
+            <th style="width:16%">Standardized Functional Name</th>
+            <th style="width:25%">Suggested Functional Name</th>
+            <th style="width:18%">Description</th>
+            <th style="width:25%">Suggested Description</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr>
-            <td><button class="field-name" onclick="openModal('Last Refresh Date Time','Last Data Refresh Timestamp','The date and time when data was last updated in the system.','Most recent date and time when this asset data was refreshed from source.')">last_refreshed_dtm</button></td>
-            <td>Last Refresh Date Time</td>
-            <td class="ai-col">Last Data Refresh Timestamp</td>
-            <td>The date and time when data was last updated in the system.</td>
-            <td class="ai-col-desc">Most recent date and time when this asset data was refreshed from source.</td>
-            <td><button class="edit-btn" onclick="openModal('Last Refresh Date Time','Last Data Refresh Timestamp','The date and time when data was last updated in the system.','Most recent date and time when this asset data was refreshed from source.')">✎ Edit</button></td>
+          <!-- Row 1 -->
+          <tr data-asset="air-001">
+            <td class="td-field">
+              <span class="field-name-code">fx_util_pct</span>
+              <span class="field-status-tag">Submitted - Under Review</span>
+            </td>
+            <td>
+              <span class="std-name-text">Federal Express Utilization Percentage</span>
+              <span class="no-ai-text">No AI Functional Name Available</span>
+            </td>
+            <td class="td-edit">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="fn-1" oninput="markEdited(this)">Federal Express Utilization Percentage</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" title="Refresh AI suggestion" onclick="resetField('fn-1','Federal Express Utilization Percentage')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('fn-1','Federal Express Utilization Percentage')">Reset</button>
+                </div>
+              </div>
+            </td>
+            <td class="td-desc">Federal Express (FedEx) Utilization Percentage measures the utilization of the FedEx network calculated as FedEx Actual divided by FedEx Planned.</td>
+            <td class="td-sugg">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="sd-1" oninput="markEdited(this)">Federal Express (FedEx) Utilization Percentage measures the utilization of the FedEx network calculated as FedEx Actual divided by FedEx Planned.</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" title="Refresh AI suggestion" onclick="resetField('sd-1','Federal Express (FedEx) Utilization Percentage measures the utilization of the FedEx network calculated as FedEx Actual divided by FedEx Planned.')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('sd-1','Federal Express (FedEx) Utilization Percentage measures the utilization of the FedEx network calculated as FedEx Actual divided by FedEx Planned.')">Reset</button>
+                </div>
+              </div>
+            </td>
           </tr>
-          <tr>
-            <td><button class="field-name" onclick="openModal('UPS Actual Weight','UPS Actual Weight Pounds','Weight measure for UPS shipments.','The total weight (in pounds) of all handling units assigned to UPS.')">ups_actual</button></td>
-            <td>United Parcel Service Actual Weight</td>
-            <td class="ai-col">UPS Actual Weight Pounds</td>
-            <td>Weight measure for United Parcel Service shipments.</td>
-            <td class="ai-col-desc">The total weight (in pounds) of all handling units assigned to UPS.</td>
-            <td><button class="edit-btn" onclick="openModal('UPS Actual Weight','UPS Actual Weight Pounds','Weight measure for UPS shipments.','The total weight (in pounds) of all handling units assigned to UPS.')">✎ Edit</button></td>
+          <!-- Row 2 -->
+          <tr data-asset="air-001 daily-004 daily-005">
+            <td class="td-field">
+              <span class="field-name-code">cair_planned</span>
+            </td>
+            <td>
+              <span class="std-name-text">Commercial Air Carriers Planned Weight Pounds</span>
+              <span class="no-ai-text">No AI Functional Name Available</span>
+            </td>
+            <td class="td-edit">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="fn-2" oninput="markEdited(this)">Commercial Air Carriers Planned Weight Pounds</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" title="Refresh AI suggestion" onclick="resetField('fn-2','Commercial Air Carriers Planned Weight Pounds')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('fn-2','Commercial Air Carriers Planned Weight Pounds')">Reset</button>
+                </div>
+              </div>
+            </td>
+            <td class="td-desc">The total assigned weight (in pounds) of handling units that will be assigned to the established Commercial Air Carriers (CAIR).</td>
+            <td class="td-sugg">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="sd-2" oninput="markEdited(this)">The total assigned weight (in pounds) of handling units that will be assigned to the established Commercial Air Carriers (CAIR).</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" title="Refresh AI suggestion" onclick="resetField('sd-2','The total assigned weight (in pounds) of handling units that will be assigned to the established Commercial Air Carriers (CAIR).')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('sd-2','The total assigned weight (in pounds) of handling units that will be assigned to the established Commercial Air Carriers (CAIR).')">Reset</button>
+                </div>
+              </div>
+            </td>
           </tr>
-          <tr>
-            <td><button class="field-name" onclick="openModal('Air Transportation Location Unit','Air Stop Location Code','Code identifying air transportation location.','The air stop (location) of the contracted Transportation Handler (THS).')">unit_code</button></td>
-            <td>Air Transportation Location Unit</td>
-            <td class="ai-col">Air Stop Location Code</td>
-            <td>Code identifying the air transportation handling location.</td>
-            <td class="ai-col-desc">The air stop (location) of the contracted Transportation Handler (THS).</td>
-            <td><button class="edit-btn" onclick="openModal('Air Transportation Location Unit','Air Stop Location Code','Code identifying air transportation location.','The air stop (location) of the contracted Transportation Handler (THS).')">✎ Edit</button></td>
+          <!-- Row 3 -->
+          <tr data-asset="cust-002 cust-003 exp-006">
+            <td class="td-field">
+              <span class="field-name-code">last_refreshed_dtm</span>
+            </td>
+            <td>
+              <span class="std-name-text">Last Refresh Date Time</span>
+              <span class="no-ai-text">No AI Functional Name Available</span>
+            </td>
+            <td class="td-edit">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="fn-3" oninput="markEdited(this)">Last Data Refresh Timestamp</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" onclick="resetField('fn-3','Last Data Refresh Timestamp')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('fn-3','Last Data Refresh Timestamp')">Reset</button>
+                </div>
+              </div>
+            </td>
+            <td class="td-desc">The date and time when data was last updated in the system.</td>
+            <td class="td-sugg">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="sd-3" oninput="markEdited(this)">Most recent date and time when this asset data was refreshed from source.</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" onclick="resetField('sd-3','Most recent date and time when this asset data was refreshed from source.')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('sd-3','Most recent date and time when this asset data was refreshed from source.')">Reset</button>
+                </div>
+              </div>
+            </td>
           </tr>
-          <tr>
-            <td><button class="field-name" onclick="openModal('CAIR Network Utilization %','CAIR Network Utilization %','Percentage of network capacity used by commercial air carriers.','Commercial Air (CAIR) network Utilization Percentage calculated as CAIR Actual weight divided by CAIR Planned weight.')">cair_util_pct</button></td>
-            <td>Commercial Air Carriers Utilization %</td>
-            <td class="ai-col">CAIR Network Utilization %</td>
-            <td>Percentage of network capacity used by commercial air carriers.</td>
-            <td class="ai-col-desc">Commercial Air (CAIR) network Utilization Percentage calculated as CAIR Actual weight divided by CAIR Planned weight.</td>
-            <td><button class="edit-btn" onclick="openModal('CAIR Network Utilization %','CAIR Network Utilization %','Percentage of network capacity used by commercial air carriers.','Commercial Air (CAIR) network Utilization Percentage calculated as CAIR Actual weight divided by CAIR Planned weight.')">✎ Edit</button></td>
+          <!-- Row 4 -->
+          <tr data-asset="cust-002 cust-003">
+            <td class="td-field">
+              <span class="field-name-code">ups_actual</span>
+            </td>
+            <td>
+              <span class="std-name-text">United Parcel Service Actual Weight</span>
+              <span class="no-ai-text">No AI Functional Name Available</span>
+            </td>
+            <td class="td-edit">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="fn-4" oninput="markEdited(this)">UPS Actual Weight Pounds</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" onclick="resetField('fn-4','UPS Actual Weight Pounds')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('fn-4','UPS Actual Weight Pounds')">Reset</button>
+                </div>
+              </div>
+            </td>
+            <td class="td-desc">Weight measure for United Parcel Service shipments.</td>
+            <td class="td-sugg">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="sd-4" oninput="markEdited(this)">The total weight (in pounds) of all handling units assigned to UPS.</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" onclick="resetField('sd-4','The total weight (in pounds) of all handling units assigned to UPS.')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('sd-4','The total weight (in pounds) of all handling units assigned to UPS.')">Reset</button>
+                </div>
+              </div>
+            </td>
           </tr>
-          <tr>
-            <td><button class="field-name" onclick="openModal('FedEx Actual Shipment Volume','FedEx Actual Shipment Volume','Volume of actual shipments processed through FedEx network.','Federal Express (FedEx) Utilization measures the planned and actual FedEx transportation volumes at the air stop level.')">fedex_actual</button></td>
-            <td>Federal Express Actual Volume</td>
-            <td class="ai-col">FedEx Actual Shipment Volume</td>
-            <td>Volume of actual shipments processed through FedEx network.</td>
-            <td class="ai-col-desc">Federal Express (FedEx) Utilization measures the planned and actual FedEx transportation volumes at the air stop level.</td>
-            <td><button class="edit-btn" onclick="openModal('FedEx Actual Shipment Volume','FedEx Actual Shipment Volume','Volume of actual shipments processed through FedEx network.','Federal Express (FedEx) Utilization measures the planned and actual FedEx transportation volumes at the air stop level.')">✎ Edit</button></td>
+          <!-- Row 5 -->
+          <tr data-asset="air-001 daily-004">
+            <td class="td-field">
+              <span class="field-name-code">cair_util_pct</span>
+            </td>
+            <td>
+              <span class="std-name-text">Commercial Air Carriers Utilization %</span>
+              <span class="no-ai-text">No AI Functional Name Available</span>
+            </td>
+            <td class="td-edit">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="fn-5" oninput="markEdited(this)">CAIR Network Utilization %</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" onclick="resetField('fn-5','CAIR Network Utilization %')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('fn-5','CAIR Network Utilization %')">Reset</button>
+                </div>
+              </div>
+            </td>
+            <td class="td-desc">Percentage of network capacity used by commercial air carriers.</td>
+            <td class="td-sugg">
+              <div class="editable-col-wrap">
+                <textarea class="inline-textarea" id="sd-5" oninput="markEdited(this)">Commercial Air (CAIR) network Utilization Percentage calculated as CAIR Actual weight divided by CAIR Planned weight.</textarea>
+                <div class="cell-actions">
+                  <button class="cell-icon-btn" onclick="resetField('sd-5','Commercial Air (CAIR) network Utilization Percentage calculated as CAIR Actual weight divided by CAIR Planned weight.')">↺</button>
+                  <button class="cell-reset-btn" onclick="resetField('sd-5','Commercial Air (CAIR) network Utilization Percentage calculated as CAIR Actual weight divided by CAIR Planned weight.')">Reset</button>
+                </div>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -836,22 +1117,80 @@ function showPage(page) {
 }
 
 /* ── EXPLORE: SIDEBAR ASSET ─────────── */
+let currentAssetId = null;
+
 function selectAsset(btn, name, domain, category, status, url) {
   document.querySelectorAll('.asset-btn').forEach(b => b.style.fontWeight = '500');
   if (btn) btn.style.fontWeight = '700';
-  document.getElementById('assetNameBanner').textContent = name + '  ' + status;
+
+  const dotClass = status === '●' ? 'dot-full' : 'dot-partial';
+  const dotHTML  = `<span class="${dotClass}">${status}</span>`;
+  document.getElementById('assetNameBanner').innerHTML = name + '&nbsp;&nbsp;' + dotHTML;
   document.getElementById('assetName').textContent = name;
-  document.getElementById('assetStatus').textContent = status;
+  document.getElementById('assetStatus').innerHTML = dotHTML;
   document.getElementById('domainInfo').textContent = domain;
   document.getElementById('categoryInfo').textContent = category;
   document.getElementById('urlInfo').textContent = url;
   document.getElementById('assetInfoPanel').classList.add('show');
+
+  // Extract asset ID from the onclick attribute via the btn element
+  const onclickAttr = btn ? btn.getAttribute('onclick') : '';
+  const idMatch = onclickAttr.match(/'([^']+)'\s*\)$/);
+  currentAssetId = idMatch ? idMatch[1] : null;
+
+  filterTableByAsset(currentAssetId);
 }
 function closeAssetInfo() {
   document.getElementById('assetInfoPanel').classList.remove('show');
 }
 
-/* ── EXPLORE: TABLE SEARCH ──────────── */
+function filterTableByAsset(assetId) {
+  const rows = document.querySelectorAll('#tableBody tr');
+  let visible = 0;
+  rows.forEach(row => {
+    const assets = row.getAttribute('data-asset') || '';
+    const show = !assetId || assets.split(' ').includes(assetId);
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('attributesBannerCount').textContent = visible;
+}
+
+/* ── CUSTOM CURATION DROPDOWN ───────── */
+function toggleCurationDropdown() {
+  document.getElementById('curationDropdown').classList.toggle('open');
+}
+function setCuration(label, value) {
+  // Map value back to the string filterAssets expects
+  const filterVal = value === 'fully' ? '● Fully Curated'
+                  : value === 'partial' ? '◐ Partially Curated'
+                  : 'Select...';
+  document.getElementById('curationFilter').value = filterVal;
+
+  // Update trigger label with colored dot if needed
+  const labelEl = document.getElementById('curationLabel');
+  if (value === 'fully') {
+    labelEl.innerHTML = '<span class="dot-full" style="font-size:14px;margin-right:6px;">●</span>Fully Curated';
+  } else if (value === 'partial') {
+    labelEl.innerHTML = '<span class="dot-partial" style="font-size:14px;margin-right:6px;">◐</span>Partially Curated';
+  } else {
+    labelEl.textContent = 'Select...';
+  }
+
+  // Mark selected option
+  document.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  document.getElementById('curationDropdown').classList.remove('open');
+  filterAssets();
+}
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('curationDropdown');
+  if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+});
+
+
 function filterTable() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   const rows = document.querySelectorAll('#tableBody tr');
@@ -1003,6 +1342,129 @@ function csRefresh() {
   document.getElementById('cs-selected-title').textContent = 'Select a change suggestion';
   document.getElementById('cs-main-content').innerHTML = '<span>Select a change suggestion from the left panel to view details</span>';
   document.querySelectorAll('.cs-suggestion-item').forEach(i => i.classList.remove('active'));
+}
+
+/* ── TABLE SEARCH ───────────────────── */
+let searchMatches = [];
+let searchIndex   = -1;
+// Store original cell HTML so we can cleanly restore it
+const cellOriginals = new Map();
+
+function filterTableBySearch(query) {
+  // Restore all cells to original HTML
+  cellOriginals.forEach((html, cell) => { cell.innerHTML = html; });
+  // Remove textarea highlight overlays
+  document.querySelectorAll('.ta-match-overlay').forEach(el => el.remove());
+
+  searchMatches = [];
+  searchIndex   = -1;
+
+  const q = query.trim().toLowerCase();
+  if (!q) return;
+
+  const rows = document.querySelectorAll('#tableBody tr');
+  rows.forEach(row => {
+    if (row.style.display === 'none') return;
+    Array.from(row.cells).forEach(cell => {
+      // Handle textareas separately
+      const textareas = cell.querySelectorAll('textarea');
+      textareas.forEach(ta => {
+        if (ta.value.toLowerCase().includes(q)) {
+          // Create a visible highlight marker next to the textarea
+          const marker = document.createElement('div');
+          marker.className = 'ta-match-overlay search-highlight';
+          marker.textContent = '🔍 match';
+          marker.dataset.taId = ta.id;
+          ta.parentNode.insertBefore(marker, ta);
+          searchMatches.push(marker);
+          // Also visually highlight the textarea border
+          ta.classList.add('ta-search-match');
+        }
+      });
+
+      // Handle plain text cells (no textarea)
+      if (!textareas.length) {
+        const text = cell.textContent;
+        if (text.toLowerCase().includes(q)) {
+          if (!cellOriginals.has(cell)) cellOriginals.set(cell, cell.innerHTML);
+          highlightInNode(cell, q);
+          const highlights = cell.querySelectorAll('.search-highlight');
+          highlights.forEach(h => searchMatches.push(h));
+        }
+      }
+    });
+  });
+
+  if (searchMatches.length) { searchIndex = 0; setCurrentMatch(0); }
+}
+
+function highlightInNode(node, q) {
+  Array.from(node.childNodes).forEach(child => {
+    if (child.nodeType === 3) {
+      const lower = child.textContent.toLowerCase();
+      let idx = lower.indexOf(q);
+      if (idx < 0) return;
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      while (idx >= 0) {
+        if (idx > last) frag.appendChild(document.createTextNode(child.textContent.slice(last, idx)));
+        const mark = document.createElement('mark');
+        mark.className = 'search-highlight';
+        mark.textContent = child.textContent.slice(idx, idx + q.length);
+        frag.appendChild(mark);
+        last = idx + q.length;
+        idx = lower.indexOf(q, last);
+      }
+      if (last < child.textContent.length) frag.appendChild(document.createTextNode(child.textContent.slice(last)));
+      child.replaceWith(frag);
+    } else if (child.nodeType === 1 && !['TEXTAREA','INPUT','BUTTON','MARK'].includes(child.tagName)) {
+      highlightInNode(child, q);
+    }
+  });
+}
+
+function setCurrentMatch(idx) {
+  document.querySelectorAll('.search-highlight').forEach(el => el.classList.remove('current'));
+  // Also clear textarea highlights
+  document.querySelectorAll('.ta-search-match').forEach(ta => ta.classList.remove('ta-current'));
+
+  const match = searchMatches[idx];
+  if (!match) return;
+  match.classList.add('current');
+
+  // If it's a textarea marker, highlight the textarea too
+  if (match.dataset && match.dataset.taId) {
+    const ta = document.getElementById(match.dataset.taId);
+    if (ta) ta.classList.add('ta-current');
+  }
+  match.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+  // Show match count
+  const counter = document.getElementById('searchCounter');
+  if (counter) counter.textContent = searchMatches.length ? `${idx + 1} / ${searchMatches.length}` : '';
+}
+
+function navigateSearch(dir) {
+  if (!searchMatches.length) return;
+  searchIndex = (searchIndex + dir + searchMatches.length) % searchMatches.length;
+  setCurrentMatch(searchIndex);
+}
+
+/* ── INLINE TABLE HELPERS ───────────── */
+function resetField(id, original) {
+  const el = document.getElementById(id);
+  if (el) { el.value = original; el.style.borderColor = ''; }
+}
+function markEdited(el) {
+  el.style.borderColor = '#0066cc';
+}
+let removeBgActive = false;
+function toggleRemoveBg() {
+  removeBgActive = document.getElementById('removeBgCheck').checked;
+  document.querySelectorAll('.inline-textarea').forEach(ta => {
+    ta.style.background = removeBgActive ? 'white' : '';
+    ta.style.borderColor = removeBgActive ? '#d0d0d0' : '';
+  });
 }
 
 /* ── MODAL ──────────────────────────── */
