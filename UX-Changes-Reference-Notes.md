@@ -18,7 +18,7 @@ The improved version adds ~1,058 lines and removes ~1,027 from the original — 
 | 2 | **Base Font Size: 13px → 15px** | `html, body { font-size: 13px }` increased to `15px` | 13px is below the comfortable reading threshold for most adults, especially on high-DPI screens; 15px reduces eye strain when reading long field descriptions |
 | 3 | **WCAG-Compliant Warning Color** | Warning yellow changed from `#fdb913` (fails WCAG AA) to `#b45309` (accessible amber) | Users with low vision or color perception differences can now read warning labels; required by federal accessibility law |
 | 4 | **Onboarding Banner** *(New)* | Added a dismissible tip banner at the top of the page (`role="note"`, `aria-label="Tip for new users"`) | First-time users get immediate guidance without reading separate documentation; dismissible so it doesn't clutter the workspace for returning users |
-| 5 | **Progress Tracker Card** *(New)* | Welcome page now shows assets reviewed, pending items, and a visual progress bar (`role="progressbar"`) | SMEs reviewing many assets need a sense of where they are; a visible progress indicator reduces anxiety and drives task completion |
+| 5 | **Progress Tracker Card** *(New)* | Welcome page now shows **Assigned to You**, **In Draft**, **Submitted**, **Completed**, and a visual progress bar (`role="progressbar"`) | SMEs tracking their own submissions need to see: work assigned, work being drafted, work submitted for review, and work completed — not a reviewer's perspective. Progress bar shows % of assigned work completed |
 | 6 | **Beginner Mode Toggle** *(New)* ⭐ | Prominent toggle hides `.advanced-term`, `.col-advanced`, `.technical-hint` elements when enabled | Core feature of the non-data-friendly brief — strips technical jargon (partition keys, schema lineage) for non-technical SMEs; power users can toggle it off |
 | 7 | **Acronym Tooltips** *(New)* | `.acronym` class with `data-tooltip` reveals definitions on hover/focus | Dashboard acronyms (CDAO, MDM, ETL) previously required Googling; definitions now appear inline without leaving the page |
 | 8 | **Navigation Icons** | Each nav tab now includes an SVG icon (Home, Search, Document) beside the label | Icons give a second recognition cue beyond text — helpful for skimmers and users in a second language; tabs are easier to find at a glance |
@@ -63,8 +63,8 @@ Readable by users with low vision; federal requirement
 Onboarding banner
 Immediate guidance for first-time users, dismissible
 5
-Progress tracker card
-Reduces anxiety; users know how far they've come
+Progress tracker card metrics
+SME submission workflow: Assigned → In Draft → Submitted → Completed; shows progress as % completed
 6
 Beginner Mode toggle 
 Hides technical jargon for non-data SMEs — the core feature
