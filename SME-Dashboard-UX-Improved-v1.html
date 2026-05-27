@@ -1444,6 +1444,7 @@ function filterAssets() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   const items = document.querySelectorAll('#assetsList .assets-li');
   let visible = 0;
+  let needsAttentionVisible = 0;
 
   items.forEach(li => {
     const domain = li.dataset.domain || '';
@@ -1457,11 +1458,16 @@ function filterAssets() {
     if (activeStatusFilter === 'full'    && status !== 'full')    show = false;
 
     li.style.display = show ? '' : 'none';
-    if (show) visible++;
+    if (show) {
+      visible++;
+      if (status === 'partial') needsAttentionVisible++;
+    }
   });
 
   document.getElementById('assetsCount').textContent  = visible;
   document.getElementById('attributesCount').textContent = visible * 3;
+  const needsAttentionEl = document.getElementById('needsAttentionCount');
+  if (needsAttentionEl) needsAttentionEl.textContent = needsAttentionVisible;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
