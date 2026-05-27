@@ -931,8 +931,8 @@ textarea:focus-visible {
           <span class="rs-label">Needs Attention First</span>
           <span class="rs-value" id="needsAttentionCount">5</span>
         </div>
-        <div class="needs-review-note" role="note">
-          Start with <strong>Needs Cleanup</strong> to work top-priority fields first.
+        <div class="needs-review-note" id="needsAttentionNote" role="note">
+          Start with <strong>Needs Cleanup</strong> to work top-priority assets first.
         </div>
       </div>
     </div>
@@ -1468,6 +1468,16 @@ function filterAssets() {
   document.getElementById('attributesCount').textContent = visible * 3;
   const needsAttentionEl = document.getElementById('needsAttentionCount');
   if (needsAttentionEl) needsAttentionEl.textContent = needsAttentionVisible;
+  const needsAttentionNoteEl = document.getElementById('needsAttentionNote');
+  if (needsAttentionNoteEl) {
+    if (needsAttentionVisible === 0) {
+      needsAttentionNoteEl.innerHTML = 'No items currently need cleanup in this view.';
+    } else if (needsAttentionVisible === 1) {
+      needsAttentionNoteEl.innerHTML = 'Start with <strong>1 asset</strong> marked <strong>Needs Cleanup</strong> in this view.';
+    } else {
+      needsAttentionNoteEl.innerHTML = 'Start with <strong>' + needsAttentionVisible + ' assets</strong> marked <strong>Needs Cleanup</strong> in this view.';
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
