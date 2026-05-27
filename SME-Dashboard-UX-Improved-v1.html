@@ -148,8 +148,31 @@ html, body {
   color: var(--gray-700);
   font-weight: 600;
 }
+.cleanup-checklist {
+  background: #f7fbff;
+  border: 1px solid #d8e7f7;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: -10px 0 18px;
+}
+.cleanup-checklist-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-dark);
+  margin-bottom: 8px;
+}
+.cleanup-checklist-items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  padding-left: 18px;
+  color: #3f556b;
+  font-size: 13px;
+  line-height: 1.5;
+}
 @media (max-width: 800px) {
   .progress-card { grid-template-columns: 1fr; }
+  .cleanup-checklist-items { grid-template-columns: 1fr; }
 }
 
 /* Steps grid */
@@ -682,7 +705,7 @@ textarea:focus-visible {
     </div>
     <div>
       <div class="hdr-title">Postal Data Wiki</div>
-      <div class="hdr-sub">SME Dashboard · Data Asset Review</div>
+      <div class="hdr-sub">SME Dashboard · Data Asset Cleanup</div>
     </div>
   </div>
 
@@ -697,7 +720,7 @@ textarea:focus-visible {
     </a>
     <a class="nav-tab" id="tab-changes" href="#" onclick="showPage('changes');return false;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Review Changes
+      My Edits
     </a>
   </nav>
 
@@ -727,7 +750,7 @@ textarea:focus-visible {
   <div id="page-welcome-inner">
     <div class="welcome-heading">
       <h1>Welcome, <a href="#">Mar Solis</a>!</h1>
-      <p>You're here to review data asset names and descriptions and make sure they make sense to everyone — not just data engineers. Work through one asset at a time.</p>
+      <p>You're here to clean up data asset names and descriptions so they make sense to everyone — not just data engineers. Work through one asset at a time.</p>
     </div>
 
     <!-- Progress summary -->
@@ -743,6 +766,16 @@ textarea:focus-visible {
       <div class="progress-updated-row" aria-label="Last refresh time">
         <strong>Last updated:</strong> Today at 9:15 AM
       </div>
+    </div>
+
+    <div class="cleanup-checklist" role="note" aria-label="Cleanup quality checklist">
+      <div class="cleanup-checklist-title">What to fix before submitting</div>
+      <ul class="cleanup-checklist-items">
+        <li>Replace technical acronyms with plain words</li>
+        <li>Add business meaning, not system logic</li>
+        <li>Remove unclear abbreviations and jargon</li>
+        <li>Make names understandable in one read</li>
+      </ul>
     </div>
 
     <!-- Steps -->
@@ -780,7 +813,7 @@ textarea:focus-visible {
         </div>
         <div class="step-body">
           <h3>Step 4 — Save or Submit</h3>
-          <p>Click <strong>Save Draft</strong> to continue later, or <strong>Submit</strong> when you're ready for a data steward to approve your changes.</p>
+          <p>Click <strong>Save Draft</strong> to continue later, or <strong>Submit</strong> when your cleanup edits are ready to send.</p>
         </div>
       </div>
     </div>
@@ -809,7 +842,7 @@ textarea:focus-visible {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
           Find What You Need
         </div>
-        <p class="filter-panel-sub">Use these options to find the right assets to review.</p>
+        <p class="filter-panel-sub">Use these options to find the right assets to clean up.</p>
 
         <!-- Beginner Mode at TOP — prominent -->
         <div class="beginner-row">
@@ -840,10 +873,10 @@ textarea:focus-visible {
               <span class="status-pill-dot dot-all" aria-hidden="true"></span> All Assets
             </button>
             <button class="status-pill" id="pill-partial" onclick="setStatusPill('partial')" aria-pressed="false">
-              <span class="status-pill-dot dot-partial" aria-hidden="true"></span> Needs Review
+              <span class="status-pill-dot dot-partial" aria-hidden="true"></span> Needs Cleanup
             </button>
             <button class="status-pill" id="pill-full" onclick="setStatusPill('full')" aria-pressed="false">
-              <span class="status-pill-dot dot-full" aria-hidden="true"></span> Fully Reviewed
+              <span class="status-pill-dot dot-full" aria-hidden="true"></span> Cleanup Complete
             </button>
           </div>
         </div>
@@ -894,8 +927,12 @@ textarea:focus-visible {
           <span class="rs-label">Fields Available</span>
           <span class="rs-value" id="attributesCount">18</span>
         </div>
+        <div class="results-summary-item">
+          <span class="rs-label">Needs Attention First</span>
+          <span class="rs-value" id="needsAttentionCount">5</span>
+        </div>
         <div class="needs-review-note" role="note">
-          <strong>5 fields</strong> are waiting for your review and plain-language descriptions.
+          Start with <strong>Needs Cleanup</strong> to work top-priority fields first.
         </div>
       </div>
     </div>
@@ -920,55 +957,55 @@ textarea:focus-visible {
         <ul class="assets-ul" role="listbox" aria-label="Data assets" id="assetsList">
 
           <li class="assets-li" role="option" data-domain="Logistics" data-status="partial">
-            <button class="asset-btn" onclick="selectAsset(this,'Air Transportation Utilization','Logistics','Data Assets','partial','air-001')" aria-label="Air Transportation Utilization — needs review">
+            <button class="asset-btn" onclick="selectAsset(this,'Air Transportation Utilization','Logistics','Data Assets','partial','air-001')" aria-label="Air Transportation Utilization — needs cleanup">
               <div>
                 <div class="asset-btn-name">Air Transportation Utilization</div>
-                <span class="status-badge partial">Needs Review</span>
+                <span class="status-badge partial">Needs Cleanup</span>
               </div>
             </button>
           </li>
 
           <li class="assets-li" role="option" data-domain="Logistics" data-status="full">
-            <button class="asset-btn" onclick="selectAsset(this,'Customer Package Pickup','Logistics','Data Assets','full','cust-002')" aria-label="Customer Package Pickup — fully reviewed">
+            <button class="asset-btn" onclick="selectAsset(this,'Customer Package Pickup','Logistics','Data Assets','full','cust-002')" aria-label="Customer Package Pickup — cleanup complete">
               <div>
                 <div class="asset-btn-name">Customer Package Pickup</div>
-                <span class="status-badge full">Fully Reviewed</span>
+                <span class="status-badge full">Cleanup Complete</span>
               </div>
             </button>
           </li>
 
           <li class="assets-li" role="option" data-domain="Transportation" data-status="full">
-            <button class="asset-btn" onclick="selectAsset(this,'Customer Registration User Identification','Transportation','Data Assets','full','cust-003')" aria-label="Customer Registration User Identification — fully reviewed">
+            <button class="asset-btn" onclick="selectAsset(this,'Customer Registration User Identification','Transportation','Data Assets','full','cust-003')" aria-label="Customer Registration User Identification — cleanup complete">
               <div>
                 <div class="asset-btn-name">Customer Registration — User ID</div>
-                <span class="status-badge full">Fully Reviewed</span>
+                <span class="status-badge full">Cleanup Complete</span>
               </div>
             </button>
           </li>
 
           <li class="assets-li" role="option" data-domain="Logistics" data-status="partial">
-            <button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue and Volume by Business Partner','Logistics','Data Assets','partial','daily-004')" aria-label="Daily Commercial Revenue and Volume by Business Partner — needs review">
+            <button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue and Volume by Business Partner','Logistics','Data Assets','partial','daily-004')" aria-label="Daily Commercial Revenue and Volume by Business Partner — needs cleanup">
               <div>
                 <div class="asset-btn-name">Daily Revenue by Business Partner</div>
-                <span class="status-badge partial">Needs Review</span>
+                <span class="status-badge partial">Needs Cleanup</span>
               </div>
             </button>
           </li>
 
           <li class="assets-li" role="option" data-domain="Logistics" data-status="full">
-            <button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue by Sales Account','Logistics','Data Assets','full','daily-005')" aria-label="Daily Commercial Revenue by Sales Account — fully reviewed">
+            <button class="asset-btn" onclick="selectAsset(this,'Daily Commercial Revenue by Sales Account','Logistics','Data Assets','full','daily-005')" aria-label="Daily Commercial Revenue by Sales Account — cleanup complete">
               <div>
                 <div class="asset-btn-name">Daily Revenue by Sales Account</div>
-                <span class="status-badge full">Fully Reviewed</span>
+                <span class="status-badge full">Cleanup Complete</span>
               </div>
             </button>
           </li>
 
           <li class="assets-li" role="option" data-domain="Operations" data-status="full">
-            <button class="asset-btn" onclick="selectAsset(this,'Expedited Packaging Supplies Items','Operations','Data Assets','full','exp-006')" aria-label="Expedited Packaging Supplies Items — fully reviewed">
+            <button class="asset-btn" onclick="selectAsset(this,'Expedited Packaging Supplies Items','Operations','Data Assets','full','exp-006')" aria-label="Expedited Packaging Supplies Items — cleanup complete">
               <div>
                 <div class="asset-btn-name">Expedited Packaging Supplies</div>
-                <span class="status-badge full">Fully Reviewed</span>
+                <span class="status-badge full">Cleanup Complete</span>
               </div>
             </button>
           </li>
@@ -1005,7 +1042,7 @@ textarea:focus-visible {
   <main class="data-main" aria-label="Asset field details">
 
     <div class="asset-name-banner">
-      <h2 id="assetNameBanner">Select an asset from the list to begin reviewing</h2>
+      <h2 id="assetNameBanner">Select an asset from the list to begin editing</h2>
     </div>
 
     <!-- Empty state — shown before selection -->
@@ -1040,7 +1077,7 @@ textarea:focus-visible {
         </div>
         <div class="banner-divider" aria-hidden="true"></div>
         <div class="banner-item">
-          <span class="banner-label">Needs Your Review</span>
+          <span class="banner-label">Needs Cleanup</span>
           <span class="banner-value warn">5</span>
         </div>
         <div class="banner-divider" aria-hidden="true"></div>
@@ -1160,9 +1197,9 @@ textarea:focus-visible {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Save Draft
       </button>
-      <button class="cs-action-btn submit" onclick="csSubmit()" aria-label="Submit for review">
+      <button class="cs-action-btn submit" onclick="csSubmit()" aria-label="Submit edits">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        Submit for Review
+        Submit Edits
       </button>
     </div>
   </div>
@@ -1171,16 +1208,16 @@ textarea:focus-visible {
   <div class="cs-body">
 
     <!-- Left panel -->
-    <aside class="cs-sidebar" aria-label="Submissions filter and list">
+    <aside class="cs-sidebar" aria-label="Edits filter and list">
 
       <div>
         <label class="cs-sidebar-label" for="cs-status">Filter by Status</label>
         <p class="cs-sidebar-sub">Select a status to see your suggestions.</p>
-        <select class="cs-status-select" id="cs-status" onchange="filterSuggestions()" aria-label="Filter submissions by status">
+        <select class="cs-status-select" id="cs-status" onchange="filterSuggestions()" aria-label="Filter edits by status">
           <option value="">Show all...</option>
-          <option value="draft">Draft — not yet submitted</option>
+          <option value="draft">Draft — not yet sent</option>
           <option value="submitted">Submitted — sent</option>
-          <option value="approved">Approved — accepted</option>
+          <option value="approved">Accepted — finalized</option>
           <option value="rejected">Rejected — needs revision</option>
         </select>
       </div>
@@ -1190,7 +1227,7 @@ textarea:focus-visible {
         <div id="cs-list" style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
           <div class="cs-no-results" id="cs-empty" role="status">
             <strong>No suggestions found</strong>
-            Select a status filter above to view your submissions.
+            Select a status filter above to view your edits.
           </div>
           <div id="cs-items" style="display:none;display:flex;flex-direction:column;gap:8px;">
             <div class="cs-suggestion-item" onclick="selectSuggestion(this,'Last Data Refresh Timestamp','last_refreshed_dtm')" role="option" tabindex="0">
@@ -1227,7 +1264,7 @@ textarea:focus-visible {
       <div class="cs-main-empty">
         <span class="empty-icon" aria-hidden="true">📝</span>
         <h3>No suggestion selected</h3>
-        <p>Use the filter on the left to find your submissions, then click one to view its details here.</p>
+        <p>Use the filter on the left to find your edits, then click one to view details here.</p>
       </div>
     </main>
 
@@ -1474,7 +1511,7 @@ function toggleSort() {
 
 function csDelete()  { if (confirm('Delete this suggestion? This cannot be undone.')) alert('Suggestion deleted.'); }
 function csSave()    { alert('Draft saved! You can come back to finish it anytime.'); }
-function csSubmit()  { alert('Submitted for review! A data steward will approve your changes.'); }
+function csSubmit()  { alert('Edits submitted. Your cleanup updates were sent successfully.'); }
 function csRefresh() {
   document.getElementById('cs-status').value = '';
   filterSuggestions();
@@ -1483,7 +1520,7 @@ function csRefresh() {
     <div class="cs-main-empty">
       <span class="empty-icon" aria-hidden="true">📝</span>
       <h3>No suggestion selected</h3>
-      <p>Use the filter on the left to find your submissions, then click one to view its details here.</p>
+      <p>Use the filter on the left to find your edits, then click one to view details here.</p>
     </div>`;
   document.querySelectorAll('.cs-suggestion-item').forEach(i => i.classList.remove('active'));
 }
@@ -1518,9 +1555,9 @@ function resetDescription() {
   document.getElementById('descriptionCount').textContent = originalDescription.length;
 }
 
-function saveSuggestion()    { alert('Draft saved! Your edits are stored and can be submitted later.'); closeModal(); }
+function saveSuggestion()    { alert('Draft saved! Your edits are stored and can be sent later.'); closeModal(); }
 function discardSuggestion() { if (confirm('Discard your changes to this field?')) { alert('Changes discarded.'); closeModal(); } }
-function submitSuggestion()  { alert('Submitted! A data steward will review your changes.'); closeModal(); }
+function submitSuggestion()  { alert('Edits submitted successfully.'); closeModal(); }
 
 document.getElementById('functionalInput').addEventListener('input', function() {
   document.getElementById('functionalCount').textContent = this.value.length;
