@@ -126,18 +126,31 @@ html, body {
 .progress-card {
   background: white; border: 1px solid var(--gray-200);
   border-radius: 10px; padding: 20px 24px;
-  display: flex; align-items: center; gap: 32px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
   margin-bottom: 28px; box-shadow: var(--shadow-sm);
+}
+.progress-stat {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 14px 16px;
 }
 .progress-card-label { font-size: 13px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
 .progress-card-value { font-size: 26px; font-weight: 700; color: var(--blue); }
 .progress-card-value.warn { color: var(--yellow-safe); }
-.progress-card-divider { width: 1px; height: 48px; background: var(--gray-200); }
-.progress-bar-wrap { flex: 1; }
-.progress-bar-label { font-size: 13px; color: var(--gray-700); font-weight: 600; margin-bottom: 6px; }
-.progress-bar-track { height: 10px; background: var(--gray-200); border-radius: 10px; overflow: hidden; }
-.progress-bar-fill  { height: 100%; width: 18%; background: var(--blue); border-radius: 10px; transition: width 0.4s; }
-.progress-bar-note  { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+.progress-updated-row {
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  color: var(--gray-500);
+  padding: 2px 4px 0;
+}
+.progress-updated-row strong {
+  color: var(--gray-700);
+  font-weight: 600;
+}
+@media (max-width: 800px) {
+  .progress-card { grid-template-columns: 1fr; }
+}
 
 /* Steps grid */
 .steps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -719,19 +732,20 @@ textarea:focus-visible {
 
     <!-- Progress summary -->
     <div class="progress-card" role="region" aria-label="Your submission progress">
-      <div>
+      <div class="progress-stat">
         <div class="progress-card-label">In Draft</div>
         <div class="progress-card-value" style="color:var(--gray-500)">15</div>
       </div>
-      <div class="progress-card-divider" aria-hidden="true"></div>
-      <div>
+      <div class="progress-stat">
         <div class="progress-card-label">Submitted</div>
         <div class="progress-card-value warn">5</div>
       </div>
-      <div class="progress-card-divider" aria-hidden="true"></div>
-      <div>
+      <div class="progress-stat">
         <div class="progress-card-label">Completed</div>
         <div class="progress-card-value" style="color:var(--green)">4</div>
+      </div>
+      <div class="progress-updated-row" aria-label="Last refresh time">
+        <strong>Last updated:</strong> Today at 9:15 AM
       </div>
     </div>
 
